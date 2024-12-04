@@ -14,20 +14,31 @@ public class Calculate
         float attractivenessMultiplier = 1 + (lot.attractiveness / 10);
 
         // see below for G(I): median income
-        float incomeMultiplier = IncomeManagement.CalculateIncomeMultiplier(SimManager.instance.incomeDistribution.ToArray());
+        var incomeDistribution = SimManager.instance.incomeDistribution.ToArray();
+        float incomeMultiplier = IncomeManagement.CalculateIncomeMultiplier(incomeDistribution);
 
         // Calculate price
         float price = attractivenessMultiplier * incomeMultiplier;
+
+        // Debug.Log($"static price: {price} | A{lot.attractiveness} Inc{incomeMultiplier}");
         return price;
     }
 
-    public static float DynamicLotPrice(Lot lot, Player player) {
-        // sigma: 1: directly percentage of income to cost of house. 0: income has no effect
+    public static float DynamicLotPrice(Lot lot) {
+        // sigma: 1: totally dynamic price 2: totally static price
         float staticPrice = StaticLotPrice(lot);
         var (median, sigma) = (SimManager.instance.medianIncome, SimManager.instance.dynamicPricingPercent);
-        float individualMultipler = 1 + sigma*((player.income - median)/median);
+        
+        int N = lot.PotentialBuyers.Count(); // num ppl interested
+        if (N > 0) {
+            float F_interest = (float)N / MovingManager.instance.N_0;
+            float F_income = lot.PotentialBuyers.Average(player => player.income) / median;
+            float dynamicPrice = staticPrice * F_interest * F_income;
 
-        return staticPrice * individualMultipler;
+            // Debug.Log($"dynamic price: {dynamicPrice} | static price: {staticPrice} | int{F_interest} inc{F_income}");
+            return (1-sigma)*staticPrice + sigma*dynamicPrice;
+        }
+        return staticPrice;
     }
 
     // ================================================================================================
@@ -56,7 +67,7 @@ public class Calculate
     // ================================================================================================
 
     public static float QualityOfLot(Lot lot, Player player) {
-        float Q = player.WeightCost * MovingManager.instance.CalculateExpense(lot, player) + player.WeightAttr * lot.attractiveness;
+        float Q = player.WeightCost * lot.currentPrice + player.WeightAttr * lot.attractiveness;
         // Debug.Log($"C{player.WeightCost} A{player.WeightAttr} | cost{MovingManager.instance.CalculateExpense(lot, player)} attr{lot.attractiveness} | quality{Q}");
         return Q;
     }

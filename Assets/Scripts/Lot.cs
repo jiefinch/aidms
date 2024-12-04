@@ -6,6 +6,11 @@ using UnityEngine;
 public enum LotState {
     ON_MARKET, OFF_MARKET
 }
+
+public struct LotHistory {
+    float ownerIncome;
+}
+
 public class Lot : MonoBehaviour
 {
     [Header("INFORMATION")]
@@ -41,9 +46,7 @@ public class Lot : MonoBehaviour
     void UpdateLot() 
     {
         if (state == LotState.OFF_MARKET) PotentialBuyers = new();
-
-        if (owner != null) currentPrice = owner.expense;
-        else currentPrice = 0;
+        if (state == LotState.ON_MARKET) currentPrice = Calculate.DynamicLotPrice(this); // update dah price
 
         // chance to deteriorate
         float randValue = Random.value;

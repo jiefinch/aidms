@@ -7,6 +7,19 @@ using UnityEngine.Events;
 using UnityEditor;
 using System.Linq;
 
+public struct SimParams {
+    public int numLots;
+    public int numPeople;
+    public List<float> incomeDistribution;
+    public int timeUnitsPassed;
+    public float alpha;
+    public float beta;
+    public float kappa;
+    public float dynamicPricingPercent;
+    public float costPenality;
+
+}
+
 public class SimManager : MonoBehaviour
 {
 
@@ -49,7 +62,6 @@ public class SimManager : MonoBehaviour
     public List<float> incomeDistribution = new();
 
     [Header("GAME")]
-    public bool sellToHighest = true;
     public float timeUnit;
     public float secsPerUnit;
     public TMP_Text displayText;
@@ -180,6 +192,7 @@ public class SimManager : MonoBehaviour
                     // give em a random house
                     Lot lot = MovingManager.instance.GetRandomAvailable();
                     MovingManager.instance.BuyHouse(settings, lot);
+                    lot.currentPrice = Calculate.StaticLotPrice(lot);
                 } else {
                     // you are unhoused
                     MovingManager.instance.MoveOut(settings);

@@ -13,6 +13,12 @@ public enum SocioClass {
     LOW, MID, HIGH
 }
 
+public struct PlayerHistory {
+    public float expense;
+    public float costliness;
+    public int attractiveness;
+}
+
 public class Player : MonoBehaviour
 {
     [Header("INFORMATION")]
@@ -46,7 +52,6 @@ public class Player : MonoBehaviour
     // public float kappa = 0.5f; // how sharp the sigmoid for care of cost vs attractiveness | high kappa = sharper care for attractiveness at higher incomes
     // public float gamma = 0.1f; // controlls the getting rid of sigmoid | low: more linear | high: more sharp / doesn't need to be completely satisfactory square, will keep.
     // >> make self adjusting?
-
 
     // Start is called before the first frame update
     void Start()
@@ -136,8 +141,12 @@ public class Player : MonoBehaviour
         MovingManager.instance.AddInterest(this, lot);
 
         // 2. remove any unavailable lots
-        List<string> unavailableLots = MovingManager.instance.GetUnavailableIdx();
-        InterestedIn.RemoveAll(item => unavailableLots.Contains(item.gameObject.name)); // remove based on same name
+        List<Lot> temp = new();
+        for (int i = 0; i < InterestedIn.Count(); i++) {
+            bool avail = MovingManager.instance.AvailableLots[InterestedIn[i].gameObject.name];
+            if (avail) temp.Add(InterestedIn[i]);
+        }
+        InterestedIn = temp;
             
         // more time you've spent moving, the less you care about quality
         qualityGoal*=1-SimManager.instance.qualityGoalDeterioration;           
@@ -157,7 +166,7 @@ public class Player : MonoBehaviour
 
     public (float, float) CalculateStats(Lot lot) 
     {
-        float _costliness = MovingManager.instance.CalculateExpense(lot, this) / income;
+        float _costliness = lot.currentPrice / income;
         float _quality = Calculate.QualityOfLot(lot, this);
         return (_costliness, _quality);
     }
