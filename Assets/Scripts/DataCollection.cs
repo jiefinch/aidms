@@ -10,19 +10,6 @@ using System.Linq;
 
 public class DataCollection : MonoBehaviour
 {
-    /*
-    1. dynamic pricing #: ...
-    2. sim params #: ....
-
-    1. player: time spent moving, # moves, quality history (normalized according to max quality on the board)
-    2. market: lots available, avg lot price, money in housing circulation
-
-    dynamic pricing: money in housing | avg costliness (housed) | %people housed at a time
-    0: 160-200
-    0.5: 200-600
-    1: 200-900
-
-    */
 
     public bool saveData;
     public string scenario;
@@ -162,6 +149,7 @@ public class DataCollection : MonoBehaviour
         output.medianHousePrice = point.medianHousePrice;
         output.averageOwnedHousePrice = point.averageOwnedHousePrice;
         output.medianOwnedHousePrice = point.medianOwnedHousePrice;
+        output.housedRate = 0; // # of people with lot value 0
         // output.movingPlayersIncomeDistribution = point._MovingPlayers.Select(player => player.income).ToList();
         // do that later
         return output;

@@ -26,7 +26,7 @@ public class SimManager : MonoBehaviour
     public GameObject lot;
     public float spacing = 1.0f;
     public float lotSize = 2.0f; 
-    public float deteriorationChance = 0.5f;
+    public float deteriorationAmount = 0.25f;
 
     [Header("PLAYER PARAMS")]
     // players
@@ -163,9 +163,10 @@ public class SimManager : MonoBehaviour
 
                 // intialize the lot
                 Lot settings = instance.GetComponent<Lot>();
+
                 MovingManager.instance.Lots.Add(settings, null); // no one in dah houseee
                 MovingManager.instance.AvailableLots.Add(settings);
-                settings.deteriorationChance = deteriorationChance;
+                // settings.deteriorationChance = deteriorationChance;
             }
         }
 
@@ -180,7 +181,8 @@ public class SimManager : MonoBehaviour
             }  else {
                 lot.attractiveness = UnityEngine.Random.Range(-10,11);
             }
-            
+            lot.GetComponent<ColorChanger>().R = (lot.attractiveness + 10) / 20.0f;
+        
         }
 
         
@@ -224,7 +226,8 @@ public class SimManager : MonoBehaviour
             player.MoveToLot(lot);
 
             player.econRank = IncomeManagement.ScaleToRange(player.income);
-            float color = (player.econRank+1f)/2f; // chance [-1,1] => [0,1]
+            // float color = (player.econRank+1f)/2f; // chance [-1,1] => [0,1]
+            float color = player.income / (medianIncome*2f); // more than double median income = higher.. 
             player.GetComponent<ColorChanger>().R = color;
 
             player.UpdatePosition();
@@ -239,7 +242,6 @@ public class SimManager : MonoBehaviour
             player.maxQuality = Calculate.MaxQualityOnMarket(player);
             player.qualityGoal = player.quality > player.maxQuality ? player.quality : player.maxQuality;
 
-            if (player.econRank == 1) Debug.Log($"{player.gameObject.name} || curr{player.quality} || goal{player.qualityGoal} || goal{player.maxQuality}");
         }
     }
 

@@ -46,6 +46,29 @@ public class Calculate
         return staticPrice;
     }
 
+    public static float ChangeInLot(Lot lot) {
+        float changeAmt = -SimManager.instance.deteriorationAmount;
+
+        // chance to gentrify
+        var (pNoChange, pImprove) = ChanceOfGentrifrication(lot.owner);
+        float randValue = UnityEngine.Random.value;
+
+        bool noChanged = false;
+        if (randValue < pNoChange)
+        {
+            changeAmt+= SimManager.instance.deteriorationAmount;
+            noChanged = true;
+        }
+        randValue = UnityEngine.Random.value;
+        if (randValue < pImprove)
+        {
+            if (noChanged) changeAmt += SimManager.instance.deteriorationAmount;
+            else changeAmt += 2*SimManager.instance.deteriorationAmount;
+        }
+
+        return changeAmt;
+    }
+
     // ================================================================================================
 
     public static float ChanceOfBuying(float quality, float qualityGoal) {
@@ -75,6 +98,17 @@ public class Calculate
         return P;
 
         // Debug.Log($"{player.gameObject.name} A{player.currentLot.attractiveness} C{player.costliness} | S_a{S_a} S_c{S_c} | move?{P}");
+    }
+
+    public static (float, float) ChanceOfGentrifrication(Player player) {
+        
+        if (player == null) return (0f, 0f); // no owner;
+        if (player.costliness >= 1) return (0f, 0f); // bro u can barely even afford to live hear
+        float P_Gentrify = (float)Math.Exp(-5f*player.costliness);
+        float P_NoChange = 1 / (1+(float)Math.Exp(5f*(player.costliness-1f)));
+
+        return (P_NoChange, P_Gentrify);
+
     }
 
 

@@ -67,8 +67,8 @@ public class MovingManager : MonoBehaviour
     void UpdateLots() {
         // add wait in here
         (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice) = HousingMarket();
-        (averageHousePrice, medianHousePrice) = (Lots.Average(l => l.Key.currentPrice),
-                                                MyUtils.Median(Lots.Select(d => d.Key.currentPrice).ToArray()));
+        (averageHousePrice, medianHousePrice) = (Lots.Average(l => l.Key.currentPrice) / SimManager.instance.medianIncome,
+                                                MyUtils.Median(Lots.Select(d => d.Key.currentPrice).ToArray()) / SimManager.instance.medianIncome);
         N_0 = BaselineInterest();
     }
 
@@ -90,7 +90,7 @@ public class MovingManager : MonoBehaviour
         float total = prices.Sum();
         float avg = total/prices.Count();
         float median = MyUtils.Median(prices.ToArray());
-        return (total, avg, median);
+        return (total/SimManager.instance.MoneyInCirculation, avg/SimManager.instance.medianIncome, median/SimManager.instance.medianIncome);
     }
 
     float BaselineInterest () 

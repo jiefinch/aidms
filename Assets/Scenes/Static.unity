@@ -150,15 +150,15 @@ RectTransform:
   m_GameObject: {fileID: 112779447}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1322426658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -178, y: -165}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -442, y: -359.9}
+  m_SizeDelta: {x: 10, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &112779449
 MonoBehaviour:
@@ -247,7 +247,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -467.62585, w: 0}
+  m_margin: {x: 0, y: 0, z: -131.07068, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -535,8 +535,8 @@ Canvas:
   m_GameObject: {fileID: 1322426654}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 1258817382}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -547,7 +547,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_TargetDisplay: 0
 --- !u!224 &1322426658
 RectTransform:
@@ -619,24 +619,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lotManager: {fileID: 1167864541}
-  rows: 5
-  cols: 13
+  rows: 10
+  cols: 15
   lot: {fileID: 8759755288784404981, guid: 1cb55a328b96a1247950c2b9bf1192da, type: 3}
   spacing: 2.1
   lotSize: 2
-  deteriorationChance: 0
+  deteriorationAmount: 0
   playerManager: {fileID: 1293873606}
-  numLow: 10
-  numMid: 10
-  numHigh: 10
+  numLow: 50
+  numMid: 49
+  numHigh: 1
   numPeople: 0
   player: {fileID: 5208202849121193467, guid: c9053dd8619ee814980ddf51040e5230, type: 3}
   qualityGoalDeterioration: 0.1
-  MoneyInCirculation: 1000
+  MoneyInCirculation: 100000
   percentsOwned:
-    Low: 0.13
-    Mid: 0.6
-    High: 0.27
+    Low: 0.026
+    Mid: 0.665
+    High: 0.309
   highestIncome: 0
   medianIncome: 0
   lowestIncome: 0
@@ -649,17 +649,17 @@ MonoBehaviour:
       m_Calls: []
   controlAttractiveness: 1
   means:
-  - -7
+  - -8
   - 0
-  - 9
+  - 8
   stdDevs:
   - 2
   - 0
   - 2
   prob:
-  - 0.8
+  - 0.5
   - 0
-  - 0.2
+  - 0.5
   dynamicPricingPercent: 0
 --- !u!114 &1351003866
 MonoBehaviour:
@@ -680,7 +680,7 @@ MonoBehaviour:
   averageHousePrice: 0
   averageOwnedHousePrice: 0
   N_0: 0
-  takeOut0s: 1
+  takeOut0s: 0
   toConsider: 1
 --- !u!114 &1351003867
 MonoBehaviour:

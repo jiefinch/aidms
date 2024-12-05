@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -35,37 +36,19 @@ public class Lot : MonoBehaviour
         SimManager.instance.nextStep.AddListener(UpdateLot);
     }
 
-    
 
-    // Update is called once per frame
-    void Update()
-    {
-        colorChanger.R = (attractiveness + 10) / 20.0f;
-    }
 
     void UpdateLot() 
     {
         if (state == LotState.OFF_MARKET) PotentialBuyers = new();
         if (state == LotState.ON_MARKET) currentPrice = Calculate.DynamicLotPrice(this); // update dah price
 
-        // chance to deteriorate
-        float randValue = Random.value;
-        if (randValue < deteriorationChance)
-        {
-            attractiveness--;
-            // Clamp the attractiveness value between -10 and 10
-            Mathf.Clamp(attractiveness, -10, 10);
-        }
+        // deteriorate vs no change vs gentrify
+        colorChanger.R += Calculate.ChangeInLot(this)/20;
+        colorChanger.R = Mathf.Clamp(colorChanger.R, -10, 10);
+        attractiveness = (int)Mathf.Round(colorChanger.R * 20) - 10; // [0,1] => [-10,10]
 
     }
     
-    // public float CalculateExpense(Player player) {
-    //     if (SimManager.instance.pricingStyle == PricingStyle.STATIC) {
-    //         return Calculate.StaticLotPrice(attractiveness, player);
-    //     } else {
-    //         // SimManager.instance.pricingStyle == PricingStyle.DYNAMIC
-    //         return Calculate.DynamicLotPrice(attractiveness, player);
-    //     }
-    // }
 
 }
