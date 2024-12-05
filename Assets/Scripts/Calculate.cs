@@ -13,6 +13,9 @@ public class Calculate
     public static float kappa = 5f; // degree of motivation seperation | cost vs attractiveness | high kappa = sharper care for attractiveness at higher incomes
     public static float sigma = 9f; // cost satisfaction sigmoid
 
+    public static float gamma = 3f; // gentrification: decay on improving
+    public static float delta = 5f; // gentrification: likelihood of nochange 
+
     // chat gptfied
     public static float StaticLotPrice(Lot lot)
     {
@@ -32,6 +35,10 @@ public class Calculate
 
     public static (float,float,float) DynamicLotPrice(Lot lot) {
         // sigma: 1: totally dynamic price 2: totally static price
+
+        // special case: homeless lot bruh
+        if (lot.attractiveness == -10) return (0f, 1f, 1f);
+
         float staticPrice = StaticLotPrice(lot);
         var (median, sigma) = (SimManager.instance.medianIncome, SimManager.instance.dynamicPricingPercent);
         
@@ -49,7 +56,7 @@ public class Calculate
     }
 
     public static float ChangeInLot(Lot lot) {
-        // chance to gentrify
+        // change in gentrify | no change | deteriorate
         var (pNoChange, pGentrify) = ChanceOfGentrifrication(lot.owner);
         float randValue = UnityEngine.Random.value;
 
@@ -77,17 +84,12 @@ public class Calculate
     public static float ChanceOfMoving(Player player) 
     {
         if (player.costliness > 1f) {
-            Debug.LogWarning("special case, cost over");
             return 1f;
         } // special case: u cant afford. hell yeah u wanna get out LOL
 
-        if (player.expense > player.income) {
-            Debug.LogWarning("is this better");
-        }
-
         var (S_a, S_c) = LotSatisfaction(player);
-        float P = 1 - (player.WeightAttr*S_a + player.WeightCost*S_c);
         // chance of movign out: how satisfied w/ attraction you are * how much do u care abt attractiveness
+        float P = 1 - (player.WeightAttr*S_a + player.WeightCost*S_c);
         return P;
 
         // Debug.Log($"{player.gameObject.name} A{player.currentLot.attractiveness} C{player.costliness} | S_a{S_a} S_c{S_c} | move?{P}");
@@ -97,8 +99,8 @@ public class Calculate
         
         if (player == null) return (0f, 0f); // no owner;
         if (player.costliness >= 1) return (0f, 0f); // bro u can barely even afford to live hear
-        float P_Gentrify = 1-player.costliness;
-        float P_NoChange = 1 / (1+(float)Math.Exp(5f*(player.costliness-1f)));
+        float P_Gentrify = (float)Math.Exp(-gamma*player.costliness);//1-player.costliness;
+        float P_NoChange = 1 / (1+(float)Math.Exp(delta*(player.costliness-1f)));
 
         return (P_NoChange, P_Gentrify);
     }
@@ -117,7 +119,7 @@ public class Calculate
         // cost quality [-1, 1] : W * costliness mapped to [-1,1]
         // attractive quality [-1, 1] : W * lot.attractiveness/10f;
 
-        float costliness = lot.currentPrice / player.income; // [0,1]
+        float costliness = DynamicLotPrice(lot).Item1 / player.income; // [0,1]
         if (costliness > 1) return -2; // cant even afford it bro || -2
         float goodPrice = 1 - costliness;  // [0,1] >> reverse it so 1 = good
 
@@ -189,7 +191,6 @@ public class IncomeManagement // G(i)
         // Scale to the [-1, 1] range
         return 2 * (x - min) / (max - min) - 1;
     }
-
                 
 
 }

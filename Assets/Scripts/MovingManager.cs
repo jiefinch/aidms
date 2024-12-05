@@ -66,9 +66,7 @@ public class MovingManager : MonoBehaviour
 
     void UpdateLots() {
         // add wait in here
-        (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice) = HousingMarket();
-        (averageHousePrice, medianHousePrice) = (Lots.Average(l => l.Key.currentPrice) / SimManager.instance.medianIncome,
-                                                MyUtils.Median(Lots.Select(d => d.Key.currentPrice).ToArray()) / SimManager.instance.medianIncome);
+        (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice, averageHousePrice, medianHousePrice) = HousingMarket();
         N_0 = BaselineInterest();
     }
 
@@ -79,18 +77,32 @@ public class MovingManager : MonoBehaviour
 
     // ========================================== MATH ==========================================
 
-    (float, float, float) HousingMarket() 
+    (float, float, float, float, float) HousingMarket() 
     {
-        List<float> prices = new();
 
-        foreach (Lot lot in AvailableLots) {
-            prices.Add(lot.currentPrice);
+        Dictionary<bool, List<float>> prices = new()
+        {
+            { true, new List<float>() },
+            { false, new List<float>() }
+        };
+
+        foreach ((Lot lot, Player owner) in Lots) {
+            bool avail = owner == null;
+            if (lot.currentPrice != 0) {
+                // this isn't even a house, it's a homeless spot
+                prices[avail].Add(lot.currentPrice);
+            }            
         }
-        if (prices.Count == 0) return (0,0,0);
-        float total = prices.Sum();
-        float avg = total/prices.Count();
-        float median = MyUtils.Median(prices.ToArray());
-        return (total/SimManager.instance.MoneyInCirculation, avg/SimManager.instance.medianIncome, median/SimManager.instance.medianIncome);
+
+        float moneyInHousingMarket = prices[true].Sum();
+        float averageOwnedHousePrice = prices[true].Average();
+        float medianOwnedHousePrice = MyUtils.Median(prices[true].ToArray());
+        float averageHousePrice = prices[true].Concat(prices[false]).ToList().Average();
+        float medianHousePrice = MyUtils.Median(prices[true].Concat(prices[false]).ToArray());
+
+        return (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice, averageHousePrice, medianHousePrice);
+
+
     }
 
     float BaselineInterest () 
@@ -104,6 +116,8 @@ public class MovingManager : MonoBehaviour
                     numInterested += tmp;
             }
         }
+
+        // 
         return (float)numInterested/numAvail;
 
     }

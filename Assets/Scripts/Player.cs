@@ -47,6 +47,7 @@ public class Player : MonoBehaviour
 
     void Update() {
         _InterestedIn = InterestedIn.Keys.ToArray();
+        if (currentLot!=null) expense = currentLot.currentPrice;
     }
     void UpdatePlayer() 
     {
@@ -154,7 +155,7 @@ public class Player : MonoBehaviour
         currentLot = lot;
         lot.owner = this;
         lot.state = LotState.OFF_MARKET;
-        expense = lot.currentPrice;
+         //Calculate.DynamicLotPrice(lot).Item1;
 
         (costliness, quality) =  CalculateStats(lot);
         if (quality > qualityGoal) {
@@ -174,7 +175,7 @@ public class Player : MonoBehaviour
 
     public (float, float) CalculateStats(Lot lot) 
     {
-        float _costliness = lot.currentPrice / income;
+        float _costliness = Calculate.DynamicLotPrice(lot).Item1 / income;
         float _quality = Calculate.QualityOfLot(lot, this);
         return (_costliness, _quality);
     }
