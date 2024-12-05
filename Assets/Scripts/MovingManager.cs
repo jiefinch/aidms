@@ -88,17 +88,23 @@ public class MovingManager : MonoBehaviour
 
         foreach ((Lot lot, Player owner) in Lots) {
             bool avail = owner == null;
-            if (lot.currentPrice != 0) {
+            if (lot.attractiveness != 0) {
                 // this isn't even a house, it's a homeless spot
                 prices[avail].Add(lot.currentPrice);
             }            
         }
 
-        float moneyInHousingMarket = prices[true].Sum();
-        float averageOwnedHousePrice = prices[true].Average();
-        float medianOwnedHousePrice = MyUtils.Median(prices[true].ToArray());
-        float averageHousePrice = prices[true].Concat(prices[false]).ToList().Average();
-        float medianHousePrice = MyUtils.Median(prices[true].Concat(prices[false]).ToArray());
+        List<float> combinedList = new List<float>(prices[true]);
+        combinedList.AddRange(prices[false]);
+
+
+        float moneyInHousingMarket = prices[false].Sum() / SimManager.instance.MoneyInCirculation;
+        
+        float medianHousePrice = MyUtils.Median(combinedList.ToArray()) / SimManager.instance.medianIncome;
+        float medianOwnedHousePrice = MyUtils.Median(prices[false].ToArray()) / SimManager.instance.medianIncome;
+
+        float averageHousePrice = combinedList.Average() / SimManager.instance.medianIncome;
+        float averageOwnedHousePrice = prices[false].Average() / SimManager.instance.medianIncome;
 
         return (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice, averageHousePrice, medianHousePrice);
 

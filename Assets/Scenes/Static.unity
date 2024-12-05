@@ -624,14 +624,12 @@ MonoBehaviour:
   lot: {fileID: 8759755288784404981, guid: 1cb55a328b96a1247950c2b9bf1192da, type: 3}
   spacing: 2.1
   lotSize: 2
-  deteriorationAmount: 0
   playerManager: {fileID: 1293873606}
   numLow: 50
   numMid: 49
   numHigh: 1
   numPeople: 0
   player: {fileID: 5208202849121193467, guid: c9053dd8619ee814980ddf51040e5230, type: 3}
-  qualityGoalDeterioration: 0.1
   MoneyInCirculation: 100000
   percentsOwned:
     Low: 0.026
@@ -642,16 +640,16 @@ MonoBehaviour:
   lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
-  secsPerUnit: 1
+  secsPerUnit: 0.5
   displayText: {fileID: 112779449}
   nextStep:
     m_PersistentCalls:
       m_Calls: []
-  controlAttractiveness: 1
+  controlAttractiveness: 0
   means:
   - -8
   - 0
-  - 8
+  - 3
   stdDevs:
   - 2
   - 0
@@ -660,7 +658,11 @@ MonoBehaviour:
   - 0.5
   - 0
   - 0.5
-  dynamicPricingPercent: 0
+  initInterestDropChance: 0.01
+  interestDeterioration: 0.5
+  qualityGoalDeterioration: 0.1
+  lotDeteriorationAmount: 0.25
+  dynamicPricingPercent: 1
 --- !u!114 &1351003866
 MonoBehaviour:
   m_ObjectHideFlags: 0

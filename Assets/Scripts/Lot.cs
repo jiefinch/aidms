@@ -27,8 +27,8 @@ public class Lot : MonoBehaviour
     public LotState state;
     public List<Player> PotentialBuyers; // list of players. sort by paymore : payless
 
-    public float F_income;
-    public float F_interest;
+    public float F_income = 1f;
+    public float F_interest = 1f;
 
     // ========
     private ColorChanger colorChanger;
@@ -40,6 +40,12 @@ public class Lot : MonoBehaviour
         SimManager.instance.nextStep.AddListener(UpdateLot);
     }
 
+    void Update() {
+        // erm what te fuck
+        if (currentPrice < 0 && attractiveness == -10) currentPrice = 0; // reset
+        if (currentPrice < 0 ) Debug.Log($"{name} youre fucked {attractiveness}");
+    }
+
 
 
     void UpdateLot() 
@@ -47,8 +53,9 @@ public class Lot : MonoBehaviour
 
         // deteriorate vs no change vs gentrify
         colorChanger.R += Calculate.ChangeInLot(this)/20;
-        colorChanger.R = Mathf.Clamp(colorChanger.R, -10, 10);
+        colorChanger.R = Mathf.Clamp(colorChanger.R, 0, 1);
         attractiveness = (int)Mathf.Round(colorChanger.R * 20) - 10; // [0,1] => [-10,10]
+        attractiveness = Mathf.Clamp(attractiveness, -10, 10);
 
         if (state == LotState.OFF_MARKET) {
             PotentialBuyers = new();
