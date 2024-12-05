@@ -26,7 +26,6 @@ public class SimManager : MonoBehaviour
     public GameObject lot;
     public float spacing = 1.0f;
     public float lotSize = 2.0f; 
-    public float deteriorationAmount = 0.25f;
 
     [Header("PLAYER PARAMS")]
     // players
@@ -36,7 +35,6 @@ public class SimManager : MonoBehaviour
     public int numHigh = 1;
     [HideInInspector] public int numPeople;
     public GameObject player;
-    public float qualityGoalDeterioration = 0.1f; // longer u wanted to move for, reduce your standards for a house
 
     [Header("CLASS PARAMS")]
     public float MoneyInCirculation = 1000; // per time unit, generated from the nether
@@ -71,6 +69,11 @@ public class SimManager : MonoBehaviour
     public float[] means;
     public float[] stdDevs;
     public float[] prob;
+
+    public float initInterestDropChance = 0.01f; // initial P(dropping)
+    public float interestDeterioration = 0.5f; // longer u've looked at, the more likely to drop it || compounding on P(dropping)
+    public float qualityGoalDeterioration = 0.1f; // longer u wanted to move for, reduce your standards for a house || linear
+    public float lotDeteriorationAmount = 0.25f;
 
     public float dynamicPricingPercent = 0.5f;  // 0: does not factor individual income | 1: max factoring
         // λ: This parameter controls how much the individual's income influences the price. If λ = 1 λ=1, the price is adjusted directly

@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using System.Numerics;
 using System;
+using Unity.VisualScripting;
 
 public class Calculate
 {
@@ -29,7 +30,7 @@ public class Calculate
         return price;
     }
 
-    public static float DynamicLotPrice(Lot lot) {
+    public static (float,float,float) DynamicLotPrice(Lot lot) {
         // sigma: 1: totally dynamic price 2: totally static price
         float staticPrice = StaticLotPrice(lot);
         var (median, sigma) = (SimManager.instance.medianIncome, SimManager.instance.dynamicPricingPercent);
@@ -41,32 +42,24 @@ public class Calculate
             float dynamicPrice = staticPrice * F_interest * F_income;
 
             // Debug.Log($"dynamic price: {dynamicPrice} | static price: {staticPrice} | int{F_interest} inc{F_income}");
-            return (1-sigma)*staticPrice + sigma*dynamicPrice;
+            dynamicPrice = (1-sigma)*staticPrice + sigma*dynamicPrice;
+            return (dynamicPrice, F_income, F_interest);
         }
-        return staticPrice;
+        return (staticPrice, 1f, 1f);
     }
 
     public static float ChangeInLot(Lot lot) {
-        float changeAmt = -SimManager.instance.deteriorationAmount;
-
         // chance to gentrify
-        var (pNoChange, pImprove) = ChanceOfGentrifrication(lot.owner);
+        var (pNoChange, pGentrify) = ChanceOfGentrifrication(lot.owner);
         float randValue = UnityEngine.Random.value;
 
-        bool noChanged = false;
-        if (randValue < pNoChange)
-        {
-            changeAmt+= SimManager.instance.deteriorationAmount;
-            noChanged = true;
+        if (randValue < pGentrify) {
+            return SimManager.instance.lotDeteriorationAmount;
+        } else if (randValue < pNoChange) {
+            return 0;
+        } else {
+            return -SimManager.instance.lotDeteriorationAmount;
         }
-        randValue = UnityEngine.Random.value;
-        if (randValue < pImprove)
-        {
-            if (noChanged) changeAmt += SimManager.instance.deteriorationAmount;
-            else changeAmt += 2*SimManager.instance.deteriorationAmount;
-        }
-
-        return changeAmt;
     }
 
     // ================================================================================================
@@ -104,11 +97,17 @@ public class Calculate
         
         if (player == null) return (0f, 0f); // no owner;
         if (player.costliness >= 1) return (0f, 0f); // bro u can barely even afford to live hear
-        float P_Gentrify = (float)Math.Exp(-5f*player.costliness);
+        float P_Gentrify = 1-player.costliness;
         float P_NoChange = 1 / (1+(float)Math.Exp(5f*(player.costliness-1f)));
 
         return (P_NoChange, P_Gentrify);
+    }
 
+    public static float ChanceOfDropping(Dictionary<Lot, int> InterestedIn, Lot lot) {
+        float i = SimManager.instance.initInterestDropChance; // initial
+        double r = 1 + SimManager.instance.interestDeterioration; // ratio of exp. increase
+        double x = InterestedIn[lot];
+        return i * (float)Math.Pow(r,x);
     }
 
 

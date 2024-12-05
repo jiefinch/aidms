@@ -10,6 +10,8 @@ public enum LotState {
 
 public struct LotHistory {
     float ownerIncome;
+    float currentPrice;
+    float attractiveness;
 }
 
 public class Lot : MonoBehaviour
@@ -25,7 +27,9 @@ public class Lot : MonoBehaviour
     public LotState state;
     public List<Player> PotentialBuyers; // list of players. sort by paymore : payless
 
-    public float deteriorationChance;
+    public float F_income;
+    public float F_interest;
+
     // ========
     private ColorChanger colorChanger;
 
@@ -40,13 +44,23 @@ public class Lot : MonoBehaviour
 
     void UpdateLot() 
     {
-        if (state == LotState.OFF_MARKET) PotentialBuyers = new();
-        if (state == LotState.ON_MARKET) currentPrice = Calculate.DynamicLotPrice(this); // update dah price
 
         // deteriorate vs no change vs gentrify
         colorChanger.R += Calculate.ChangeInLot(this)/20;
         colorChanger.R = Mathf.Clamp(colorChanger.R, -10, 10);
         attractiveness = (int)Mathf.Round(colorChanger.R * 20) - 10; // [0,1] => [-10,10]
+
+        if (state == LotState.OFF_MARKET) {
+            PotentialBuyers = new();
+            currentPrice = Calculate.DynamicLotPrice(this).Item1; // update dah price
+            // update the expense
+            owner.costliness = currentPrice / owner.income;
+
+        }
+        if (state == LotState.ON_MARKET) {
+            (currentPrice, F_income, F_interest) = Calculate.DynamicLotPrice(this); // update dah price
+        }
+
 
     }
     

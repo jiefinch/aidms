@@ -34,7 +34,8 @@ public class Player : MonoBehaviour
     [HideInInspector] public float maxQuality = 0f;
     public float qualityGoal;
     public float quality; // attractiveness : costliness => want to maximize [0/[0-1] : 20/[0:1]]
-    public List<Lot> InterestedIn; // list of lots
+    public Dictionary<Lot, int> InterestedIn;
+    public Lot[] _InterestedIn; // list of lots
     [HideInInspector] public float WeightCost = 0f;
     [HideInInspector] public float WeightAttr = 0f;
 
@@ -44,7 +45,9 @@ public class Player : MonoBehaviour
         SimManager.instance.nextStep.AddListener(UpdatePlayer);
     }
 
-    
+    void Update() {
+        _InterestedIn = InterestedIn.Keys.ToArray();
+    }
     void UpdatePlayer() 
     {
         ConsiderMoving();
@@ -73,21 +76,23 @@ public class Player : MonoBehaviour
 
         var randValue = UnityEngine.Random.value;
         // highest chance to buy lot
-        if (InterestedIn.Count > 0) {
-            foreach (Lot l in InterestedIn) {
+        if (_InterestedIn.Length > 0) {
+            foreach (Lot l in InterestedIn.Keys.ToArray()) {
                 float Q = Calculate.QualityOfLot(l, this);
                 float chance = Calculate.ChanceOfBuying(Q, qualityGoal);
                 if (chance > _prevChance && chance > randValue) {
                     buyLot = l;
                     _prevChance = chance;
+                } else {
+                    InterestedIn[l] += 1; // didin't but this time tiger
                 }
             }
         }
 
         if (buyLot != null) {
-            foreach (Player player in buyLot.PotentialBuyers) {
+            foreach (Player player in buyLot.PotentialBuyers.ToArray()) {
                 player.InterestedIn.Remove(buyLot);
-            } // STOP LOOKING AT ME >____<
+            } // STOP LOOKING the lots u were looking at >____< ... im gonna buy something
         }
 
         return buyLot;
@@ -96,15 +101,31 @@ public class Player : MonoBehaviour
     void Wait()
     {
         // PLAYER POV
+        // remove interest chances
+        // 1. interested in
+        // 2. potential buyers
+        int num = _InterestedIn.Length;
+        float randValue = UnityEngine.Random.value;
+        Lot[] lotsToRemove = InterestedIn.Where(item => randValue < Calculate.ChanceOfDropping(InterestedIn, item.Key)).
+                Select(item => item.Key)
+                .ToArray();
+
+        foreach(Lot lot in lotsToRemove.ToArray()) {
+            InterestedIn.Remove(lot);
+            lot.PotentialBuyers.Remove(this);
+        }
+
         // 0.5 if interested in is new, then add howevermuch u need to
-        int toAdd = InterestedIn.Count > 0 ? 1 : MovingManager.instance.toConsider;
+        int toAdd = _InterestedIn.Length > 0 ? 1 : MovingManager.instance.toConsider;
 
         // 1. add contender(s)
         for (int i = 0; i < toAdd; i ++) {
             // get random avail
             Lot lot = MovingManager.instance.AvailableLots.GetRandom().Item2;
-            InterestedIn.Add(lot);
-            lot.PotentialBuyers.Add(this); 
+            if (!InterestedIn.ContainsKey(lot)) {
+                InterestedIn.Add(lot, 0);
+                lot.PotentialBuyers.Add(this); 
+            }
         }
         if (qualityGoal>-1f) qualityGoal-=SimManager.instance.qualityGoalDeterioration;
     }
@@ -121,12 +142,11 @@ public class Player : MonoBehaviour
             currentLot.state = LotState.ON_MARKET;
         }
 
-        // no longer an option for ya kids
-        foreach(Player player in lot.PotentialBuyers) {
+        // no longer an option for other people
+        foreach(Player player in lot.PotentialBuyers.ToArray()) {
             player.InterestedIn.Remove(lot);
         }
         
-
         InterestedIn = new();
         lot.PotentialBuyers = new();
 
@@ -141,7 +161,7 @@ public class Player : MonoBehaviour
             qualityGoal = quality; // improve ur quality standards to match this house
         }
         // remove self from all the housese u were interested in
-        foreach(Lot l in InterestedIn) {
+        foreach(Lot l in InterestedIn.Keys.ToArray()) {
             l.PotentialBuyers.Remove(this);
         }
 
