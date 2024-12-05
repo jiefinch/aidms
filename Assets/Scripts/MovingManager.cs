@@ -67,7 +67,6 @@ public class MovingManager : MonoBehaviour
     }
 
     void Update() {
-        // marketPrice = 0f;
         _AvailableLots = AvailableLots.Where(item => item.Value == true).Select(item => item.Key).ToList();
         _MovingPlayers = MovingPlayers.Where(item => item.Value == true).Select(item => item.Key).ToList();
     }
@@ -85,15 +84,9 @@ public class MovingManager : MonoBehaviour
         } else {
             foreach((Lot lot, Player player) in Lots) DownstreamBuyHouse(player, lot);
         }
-        
 
     }
-
-    public Lot GetRandomAvailable() {
-        var values = AvailableLots.Where(item => item.Value == true).Select(item => item.Key).ToList();
-        if (values.Count > 0 ) return values.PopRandom();
-        else return null;
-    }
+    // ========================================== SIM. ==========================================
 
     public void BuyHouse(Player player, Lot lot) 
     {
@@ -129,51 +122,23 @@ public class MovingManager : MonoBehaviour
         player.UpdatePosition();
     }
 
-    public void MoveOut(Player player)
-    {
-        player.InterestedIn = new();
-        Players[player] = null; // ensures only 1 house to 1 lot ownershio
+    // ========================================== HELPERS ==========================================
 
-
-        // if you actually own a house right now give that up and put it onto market
-        if (player.currentLot != null) {
-            Lot lot = player.currentLot;
-            lot.state = LotState.ON_MARKET;
-            AvailableLots[lot] = true;
-            lot.owner = null;
-            lot.PotentialBuyers = new();
-            Lots[lot] = null;
-        }
-        
-
-        player.SetState(PlayerState.MOVING);
-        MovingPlayers[player] = true;
-        (player.expense, player.costliness, player.quality) = (0f,0f,Mathf.NegativeInfinity); // technically homeless i guess
-
-        // hello! you're just freshly moving!!!
-        for (int i = 0; i < toConsider; i++) {
-            Lot lot = GetRandomAvailable();
-            AddInterest(player, lot);
-        }
-
-        player.currentLot = null;
-        player.numMoves++;
-        player.UpdatePosition();
+    public Lot GetRandomAvailable() {
+        var values = AvailableLots.Where(item => item.Value == true).Select(item => item.Key).ToList();
+        if (values.Count > 0 ) return values.PopRandom();
+        else return null;
     }
+
 
     public void AddInterest(Player player, Lot lot) 
     {
         if (lot == null) return; //ran out of housing lol
         player.InterestedIn.Add(lot);
         lot.PotentialBuyers.InsertInOrder(player); // most to least money
-
-        if (player.InterestedInBuyChance == null) player.InterestedInBuyChance = new();
-        if (!player.InterestedInBuyChance.ContainsKey(lot)) {
-            float _quality = player.CalculateStats(lot).Item2;
-            float R = Calculate.ChanceOfBuying(_quality, player.qualityGoal);
-            player.InterestedInBuyChance.Add(lot, R);
-        }
     }
+
+    // ========================================== MATH ==========================================
 
     (float, float, float) HousingMarket() 
     {
@@ -206,26 +171,6 @@ public class MovingManager : MonoBehaviour
         }
         return (float)numInterested/numAvail;
 
-    }
-
-
-    // ========================================================
-
-    // This function matches the highest income person who has a random chance less than their probability
-    public Player MatchPersonToLot(Lot lot)
-    {
-        var randValue = UnityEngine.Random.value;
-        // Loop through the list (which is already sorted by income high to low)
-
-        for (int i = 0 ; i < lot.PotentialBuyers.Count; i++ ) {
-            Player player = lot.PotentialBuyers[i];
-            
-            // If random value is less than their chance to buy, return this person
-            // Debug.Log($"{randValue} {player.InterestedInBuyChance[lot]} | {randValue < player.InterestedInBuyChance[lot]}");
-            if (randValue < player.InterestedInBuyChance[lot]) return player;
-        }
-
-        return null;
     }
     
 

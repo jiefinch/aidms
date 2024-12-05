@@ -41,7 +41,6 @@ public class Player : MonoBehaviour
     public PlayerState state;
     public PlayerState prevState = PlayerState.INIT;
     public List<Lot> InterestedIn; // list of lots
-    public Dictionary<Lot, float> InterestedInBuyChance;
     [HideInInspector] public float WeightCost = 0f;
     [HideInInspector] public float WeightAttr = 0f;
 
@@ -58,71 +57,76 @@ public class Player : MonoBehaviour
     void Start()
     {
         SimManager.instance.nextStep.AddListener(UpdatePlayer);
-        InterestedIn = new();
-        InterestedInBuyChance = new();
+        
     }
+
     
     void UpdatePlayer() 
     {
-        if (state == PlayerState.MOVING) {
-            unitsSpentMoving++;
-            timeUnitsMoving++;
-            Moving();
+        ConsiderMoving();
+        // if (state == PlayerState.MOVING) {
+        //     unitsSpentMoving++;
+        //     timeUnitsMoving++;
+        //     Moving();
 
-            if (prevState == PlayerState.STATIC) prevState = PlayerState.MOVING;
-        } else if (state == PlayerState.STATIC) {
-            timeUnitsMoving = 0;
-            ConsiderMoving(); 
+        //     if (prevState == PlayerState.STATIC) prevState = PlayerState.MOVING;
+        // } else if (state == PlayerState.STATIC) {
+        //     timeUnitsMoving = 0;
+        //     ConsiderMoving(); 
 
-            if (prevState == PlayerState.MOVING) prevState = PlayerState.STATIC;
-        }
-        if (prevState != state) UpdatePosition();
+        //     if (prevState == PlayerState.MOVING) prevState = PlayerState.STATIC;
+        // }
+        // if (prevState != state) UpdatePosition();
     }
 
     public void UpdatePosition() {
-        if (state == PlayerState.STATIC) {
-            transform.position = currentLot.transform.position;
-        } else {
-            // get sent to moving son
-            var randPos = new UnityEngine.Vector3(UnityEngine.Random.Range(-13f, 13f), UnityEngine.Random.Range(-1.6f, 1.6f), 0 ); // y: +/-1.6
-            transform.position = MovingManager.instance.gameObject.transform.position + randPos;
-        }
+        transform.position = currentLot.transform.position;
+
+        // if (state == PlayerState.STATIC) {
+        //     transform.position = currentLot.transform.position;
+        // } else {
+        //     // get sent to moving son
+        //     var randPos = new UnityEngine.Vector3(UnityEngine.Random.Range(-13f, 13f), UnityEngine.Random.Range(-1.6f, 1.6f), 0 ); // y: +/-1.6
+        //     transform.position = MovingManager.instance.gameObject.transform.position + randPos;
+        // }
     }
 
     /// ==================== SIM TIME
     
-    void Moving()
+    void ConsiderMoving() {
+        float randValue = UnityEngine.Random.value;        
+        if (randValue < Calculate.ChanceOfMoving(this)) {
+
+            Lot lot = ConsiderOptions(); // is there a lot i wanna buy?
+            if (lot != null) { // yes! let's move there.
+                MovingManager.instance.BuyHouse(this, lot);   
+                numMoves++;    
+            } else Wait(); // no, add another place i'm looking to move.
+        }  
+    }
+
+
+    Lot ConsiderOptions()
     {
         Lot buyLot = null;
+        float _prevChance = 0f;
 
         var randValue = UnityEngine.Random.value;
         // highest chance to buy lot
-        if (InterestedInBuyChance.Count > 0) {
-            Lot lot = InterestedInBuyChance.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
-            if (randValue < InterestedInBuyChance[lot]) {
-                buyLot = lot;
+        if (InterestedIn.Count > 0) {
+            foreach (Lot l in InterestedIn) {
+                float Q = Calculate.QualityOfLot(l, this);
+                float chance = Calculate.ChanceOfBuying(Q, qualityGoal);
+                if (chance > _prevChance && chance > randValue) {
+                    buyLot = l;
+                    _prevChance = chance;
+                }
             }
         }
-        
-        // figure out if you can buy house here
-        // compare interestedbuyChance & lot.potentialbuyers
-        // mode 1: select most buy chance
-        // mode 2:  
 
-        if (buyLot != null) {
-            // BUY THE HOUSE
-            BuyHouse(buyLot);
-        } else {
-            // WAIT
-            Wait();
-        }
+        return buyLot;
     }
 
-    void BuyHouse(Lot lot) 
-    {
-        numMoves++;
-        MovingManager.instance.BuyHouse(this, lot);        
-    }
 
     void Wait()
     {
@@ -142,14 +146,6 @@ public class Player : MonoBehaviour
         // more time you've spent moving, the less you care about quality
         qualityGoal*=1-SimManager.instance.qualityGoalDeterioration;           
     }
-
-    void ConsiderMoving() {
-        float randValue = UnityEngine.Random.value;        
-        if (randValue < Calculate.ChanceOfMoving(this)) {
-            MovingManager.instance.MoveOut(this);
-        }  
-    }
-
 
 
     // HELPER =================================================================

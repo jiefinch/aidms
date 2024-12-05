@@ -63,7 +63,6 @@ public class SimManager : MonoBehaviour
     private float timer;
     DateTime startTime;
     public UnityEvent nextStep;
-    public float housingChance = 0.75f;
 
 
     [Header("MATH")]
@@ -190,15 +189,9 @@ public class SimManager : MonoBehaviour
                 if (pieDistribution[i] > highestIncome) highestIncome = pieDistribution[i];
 
                 // give em a random house
-                float randValue = UnityEngine.Random.value;
-                if (randValue < housingChance) {
-                    Lot lot = MovingManager.instance.GetRandomAvailable();
-                    MovingManager.instance.BuyHouse(settings, lot);
-                    lot.currentPrice = Calculate.StaticLotPrice(lot);
-                } else {
-                    MovingManager.instance.MoveOut(settings);
-                }
-                
+                Lot lot = MovingManager.instance.GetRandomAvailable();
+                MovingManager.instance.BuyHouse(settings, lot);
+                lot.currentPrice = Calculate.StaticLotPrice(lot);
 
                 settings.UpdatePosition();
             }
