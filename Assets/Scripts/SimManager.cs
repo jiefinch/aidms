@@ -11,13 +11,8 @@ public struct SimParams {
     public int numLots;
     public int numPeople;
     public List<float> incomeDistribution;
-    public int timeUnitsPassed;
-    public float alpha;
-    public float beta;
-    public float kappa;
+    public int timeUnits;
     public float dynamicPricingPercent;
-    public float costPenality;
-
 }
 
 public class SimManager : MonoBehaviour
@@ -42,7 +37,6 @@ public class SimManager : MonoBehaviour
     public int numHigh = 1;
     [HideInInspector] public int numPeople;
     public GameObject player;
-    public float housingChance = 0.75f; // at the start
     public float qualityGoalDeterioration = 0.1f; // longer u're homeless for, reduce 10% your standards
 
     [Header("CLASS PARAMS")]
@@ -59,6 +53,7 @@ public class SimManager : MonoBehaviour
     // public float percentHighOwn = 0.27f;
     public float highestIncome = 0f;
     public float medianIncome = 0f;
+    public float lowestIncome = 0f;
     public List<float> incomeDistribution = new();
 
     [Header("GAME")]
@@ -68,17 +63,14 @@ public class SimManager : MonoBehaviour
     private float timer;
     DateTime startTime;
     public UnityEvent nextStep;
+    public float housingChance = 0.75f;
 
 
     [Header("MATH")]
     // 𝑅 = chance of buying
-    public float alpha = 0.1f; //α is a constant that controls the rate at which 𝑅 increases with distance.
-    public float beta = 0.1f; //β is a constant that controls the rate at which 𝑅 R decreases with distance.
-    public float kappa = 5f; // how sharp the sigmoid for care of cost vs attractiveness | high kappa = sharper care for attractiveness at higher incomes
     public float dynamicPricingPercent = 0.5f;  // 0: does not factor individual income | 1: max factoring
         // λ: This parameter controls how much the individual's income influences the price. If λ = 1 λ=1, the price is adjusted directly
         // by the percentage difference in income. If λ = 0 λ=0, the income difference has no effect on the price.
-    public float costPenalty = 5f;
 
     //====================
     [HideInInspector] public static SimManager instance;
@@ -101,15 +93,26 @@ public class SimManager : MonoBehaviour
     void Start()
     {
         numPeople = numLow + numHigh + numMid;
+        if (!DataCollection.instance.saveData) InitializeSimulation();
+    }
+
+    public void InitializeSimulation() {
         InstantiateGrid();
         InstatiatePlayers();
         medianIncome = MyUtils.Median(incomeDistribution.ToArray());
+        lowestIncome = incomeDistribution.Min();
         InitializePlayers();
 
         initialized = true;
         startTime = DateTime.Now;
         Debug.Log("intialized done");
+    }
 
+    public void DestroySimulation() {
+        initialized = false;
+        timer = 0;
+        foreach(Transform child in lotManager.transform) Destroy(child.gameObject);
+        foreach(Transform child in playerManager.transform) Destroy(child.gameObject);
     }
 
     // Update is called once per frame
@@ -154,8 +157,8 @@ public class SimManager : MonoBehaviour
 
                 // intialize the lot
                 Lot settings = instance.GetComponent<Lot>();
-                MovingManager.instance.Lots.Add(instance.name, settings);
-                MovingManager.instance.AvailableLots.Add(instance.name, true); // lot is available! ^__^
+                MovingManager.instance.Lots.Add(settings, null);
+                MovingManager.instance.AvailableLots.Add(settings, true); // lot is available! ^__^
                 settings.deteriorationChance = deteriorationChance;
                 if (randomizeAttractiveness) {
                     settings.attractiveness = UnityEngine.Random.Range(-10,11); // [-10,10]
@@ -179,24 +182,24 @@ public class SimManager : MonoBehaviour
                 instance.name = $"player({socio}{i})";
 
                 Player settings = instance.GetComponent<Player>();
-                MovingManager.instance.Players.Add(instance.name, settings);
-                MovingManager.instance.MovingPlayers.Add(instance.name, false);
+                MovingManager.instance.Players.Add(settings, null);
+                MovingManager.instance.MovingPlayers.Add(settings, false);
 
                 settings.socioClass = socio;
                 settings.income = pieDistribution[i];
                 if (pieDistribution[i] > highestIncome) highestIncome = pieDistribution[i];
 
+                // give em a random house
                 float randValue = UnityEngine.Random.value;
-                if (randValue < housingChance)
-                {
-                    // give em a random house
+                if (randValue < housingChance) {
                     Lot lot = MovingManager.instance.GetRandomAvailable();
                     MovingManager.instance.BuyHouse(settings, lot);
                     lot.currentPrice = Calculate.StaticLotPrice(lot);
                 } else {
-                    // you are unhoused
                     MovingManager.instance.MoveOut(settings);
                 }
+                
+
                 settings.UpdatePosition();
             }
         }
@@ -205,9 +208,12 @@ public class SimManager : MonoBehaviour
         instantiateClass(numHigh, SocioClass.HIGH, percentsOwned.High);
     }
     void InitializePlayers() {
-        foreach ((string name, Player player) in MovingManager.instance.Players) {
+        foreach (Player player in MovingManager.instance.Players.Keys) {
             (player.maxQuality, player.qualityGoal) = Calculate.QualityOnMarket(player);
             (player.WeightCost, player.WeightAttr) = IncomeManagement.Weights(player);
+            player.econRank = IncomeManagement.ScaleToRange(player.income);
+            float color = (player.econRank+1f)/2f; // chance [-1,1] => [0,1]
+            player.GetComponent<ColorChanger>().R = color;
         }
     }
 

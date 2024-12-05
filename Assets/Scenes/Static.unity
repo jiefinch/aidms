@@ -171,10 +171,10 @@ MonoBehaviour:
   _AvailableLots: []
   _MovingPlayers: []
   moneyInHousingMarket: 0
-  averageOwnedHousePrice: 0
+  medianHousePrice: 0
   medianOwnedHousePrice: 0
   averageHousePrice: 0
-  medianHousePrice: 0
+  averageOwnedHousePrice: 0
   N_0: 0
   takeOut0s: 1
   toConsider: 3
@@ -943,20 +943,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lotManager: {fileID: 1167864541}
-  rows: 5
-  cols: 13
+  rows: 3
+  cols: 5
   lot: {fileID: 8759755288784404981, guid: 1cb55a328b96a1247950c2b9bf1192da, type: 3}
   spacing: 2.1
   lotSize: 2
   randomizeAttractiveness: 1
   deteriorationChance: 0
   playerManager: {fileID: 1293873606}
-  numLow: 12
-  numMid: 8
-  numHigh: 2
+  numLow: 5
+  numMid: 5
+  numHigh: 5
   numPeople: 0
   player: {fileID: 5208202849121193467, guid: c9053dd8619ee814980ddf51040e5230, type: 3}
-  housingChance: 0
+  housingChance: 1
   qualityGoalDeterioration: 0.1
   MoneyInCirculation: 1000
   percentsOwned:
@@ -965,6 +965,7 @@ MonoBehaviour:
     High: 0.27
   highestIncome: 0
   medianIncome: 0
+  lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
   secsPerUnit: 1
@@ -972,11 +973,7 @@ MonoBehaviour:
   nextStep:
     m_PersistentCalls:
       m_Calls: []
-  alpha: 0.2
-  beta: 0.8
-  kappa: 0.1
   dynamicPricingPercent: 0
-  costPenalty: 5
 --- !u!1 &1464171917
 GameObject:
   m_ObjectHideFlags: 0
@@ -1197,7 +1194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 817cbb1ee5970b947923b60c460557d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveData: 1
+  saveData: 0
   scenario: test
   numSims: 1
   numTimeUnits: 10
@@ -1352,7 +1349,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1258817383}
+  - {fileID: 1761126853}
   - {fileID: 1351003864}
   - {fileID: 44781575}
   - {fileID: 1322426658}
-  - {fileID: 1761126853}

@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.IO;
+using System;
+using System.Threading.Tasks;
+using System.Linq;
+
 
 public class DataCollection : MonoBehaviour
 {
@@ -21,16 +26,27 @@ public class DataCollection : MonoBehaviour
 
     public bool saveData;
     public string scenario;
-    public int numSims;
+    public int numSims = 1;
     public int numTimeUnits;
 
-
     // ===============================
-    [HideInInspector] public static Dictionary<string, object> Data;
-    [HideInInspector] public static SimParams SimParams;
-    [HideInInspector] public static List<MovingHistory> MovingHistory;
-    [HideInInspector] public static Dictionary<float, List<PlayerHistory>> PlayerHistories; // index: income
-    [HideInInspector] public static Dictionary<int, List<LotHistory>> LotHistories; // index: attractive
+    private string rootPath; 
+    private string dataPath;
+        
+    // =============================== DATA ======================
+    public struct RecordedData {
+        public SimParams SimParams;
+        public List<MovingHistory> MovingHistory;
+        public Dictionary<float, List<PlayerHistory>> PlayerHistories;
+        public Dictionary<int, List<LotHistory>> LotHistories;
+    }  
+    // [HideInInspector] public static Dictionary<string, object> Data;
+    // [HideInInspector] public static SimParams SimParams;
+    // [HideInInspector] public static List<MovingHistory> MovingHistory;
+    // [HideInInspector] public static Dictionary<float, List<PlayerHistory>> PlayerHistories; // index: income
+    // [HideInInspector] public static Dictionary<int, List<LotHistory>> LotHistories; // index: attractive
+
+    public RecordedData Data;
 
     // ===============================
     [HideInInspector] public static DataCollection instance;
@@ -50,52 +66,106 @@ public class DataCollection : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Initialize();
+        rootPath = Application.dataPath;
+        dataPath = Path.Combine(rootPath, "Data"); //rootPath + $"/Data/";
+        // SimManager.instance.nextStep.AddListener(SaveDataPoint);
+        if (saveData) RunSimulation(); 
     }
 
-    // Update is called once per frame
-    void Update()
+    public async void RunSimulation()
     {
-        
+        for (int sim = 0; sim < numSims; sim++)
+        {
+            NewRecording();
+            SimManager.instance.InitializeSimulation(); // begins running the simulation
+
+            // Wait until SimManager.timeUnit reaches 100
+            await WaitForTimeUnit(numTimeUnits);
+
+            // Once timeUnit reaches XXX, call endSim
+            SimManager.instance.DestroySimulation();
+            SaveRecording(sim, Data);
+        }
     }
 
-    void Initialize() 
+    private async Task WaitForTimeUnit(int targetTimeUnit)
+    {
+        // Wait until SimManager's timeUnit reaches the target value
+        while (SimManager.instance.timeUnit < targetTimeUnit)
+        {
+            await Task.Delay(100); // Delay for 100 ms before checking again
+        }
+    }
+
+    void NewRecording() 
     {
         Data = new();
-        SimParams = new();
-        MovingHistory = new();
-        PlayerHistories = new();
-        LotHistories = new();
-    }
-    void SaveFile() 
-    {
-        Data.Add("scenario", scenario);
-        Data.Add("sim_params", SimParams);
-        Data.Add("moving_history", MovingHistory);
-        Data.Add("player_histories", PlayerHistories); // indexed by income
-        Data.Add("lot_histories", LotHistories);   
+        Data.SimParams = new();
+        Data.MovingHistory = new();
+        Data.PlayerHistories = new();
+        Data.LotHistories = new();
     }
 
+    public void SaveRecording(int simNum, RecordedData Data) {
+        // SaveParameters(Data);
+
+        // string outputFilePath = $"{dataPath}/{saveNumber()}.json";
+        string date = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm");
+        string fileName = $"{scenario}{simNum}_{date}";
+        string outputFilePath = Path.Combine(dataPath, $"{fileName}.json");
+
+        // convert and save
+        string json = JsonConvert.SerializeObject(Data, Formatting.Indented);
+        System.IO.File.WriteAllText(outputFilePath, json);
+    }
+
+
+    // ========================= ADD DATA FUNCTIONS ============================
     void Add(SimParams data) {
-        SimParams = data;
+        Data.SimParams = data;
     }
 
     void Add(MovingHistory data) {
-        MovingHistory.Add(data);
+        Data.MovingHistory.Add(data);
     }
 
     void Add(float key, PlayerHistory data) {
-        if (!PlayerHistories.ContainsKey(key)) {
-            PlayerHistories.Add(key, new List<PlayerHistory>(){data});
+        if (!Data.PlayerHistories.ContainsKey(key)) {
+            Data.PlayerHistories.Add(key, new List<PlayerHistory>(){data});
         } else {
-            PlayerHistories[key].Add(data);
+            Data.PlayerHistories[key].Add(data);
         }
     }
     void Add(int key, LotHistory data) {
-        if (!LotHistories.ContainsKey(key)) {
-            LotHistories.Add(key, new List<LotHistory>(){data});
+        if (!Data.LotHistories.ContainsKey(key)) {
+            Data.LotHistories.Add(key, new List<LotHistory>(){data});
         } else {
-            LotHistories[key].Add(data);
+            Data.LotHistories[key].Add(data);
         }
+    }
+
+    // ========================= ADD POINT FUNCTIONS ============================
+    public SimParams NewDataPoint(SimManager point) {
+        SimParams output = new();
+        output.numLots = point.rows * point.cols;
+        output.numPeople = point.numPeople;
+        output.timeUnits = (int)point.timeUnit;
+        output.incomeDistribution = point.incomeDistribution;
+        output.dynamicPricingPercent = point.dynamicPricingPercent;
+        return output;
+    }
+
+    public MovingHistory NewDataPoint(MovingManager point) {
+        MovingHistory output = new();
+        output.moneyInHousingMarket = point.moneyInHousingMarket;
+        output.averageHousePrice = point.averageHousePrice;
+        output.medianHousePrice = point.medianHousePrice;
+        output.averageOwnedHousePrice = point.averageOwnedHousePrice;
+        output.medianOwnedHousePrice = point.medianOwnedHousePrice;
+        output.movingPlayers = point._MovingPlayers.Count;
+        output.housedRate = (float) output.movingPlayers / SimManager.instance.numPeople;
+        // output.movingPlayersIncomeDistribution = point._MovingPlayers.Select(player => player.income).ToList();
+        // do that later
+        return output;
     }
 }

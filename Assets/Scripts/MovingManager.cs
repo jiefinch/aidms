@@ -9,32 +9,36 @@ public struct MovingHistory {
     public float moneyInHousingMarket;
     public float averageHousePrice;
     public float medianHousePrice;
+    public float averageOwnedHousePrice;
+    public float medianOwnedHousePrice;
     public int movingPlayers;
     public float housedRate; // % of people currently housed. movingPlayers / numPlayers
-    public List<float> movingPlayersIncomeDistribution;
 }
 
 public class MovingManager : MonoBehaviour
 {
-    public Dictionary<string, Player> Players = new();
-    public Dictionary<string, Lot> Lots = new();
+    // public Dictionary<string, Player> Players = new();
+    // public Dictionary<string, Lot> Lots = new();
 
-    public Dictionary<string, bool> MovingPlayers = new();
-    public Dictionary<string, bool> AvailableLots = new();
+    public Dictionary<Player, bool> MovingPlayers = new();
+    public Dictionary<Lot, bool> AvailableLots = new();
+
+    public Dictionary<Lot, Player> Lots = new();
+    public Dictionary<Player, Lot> Players = new();
 
 
     [Header("INFORMATION")]
     // for public exposure
-    public List<string> _AvailableLots = new();
-    public List<string> _MovingPlayers = new();
+    public List<Lot> _AvailableLots = new();
+    public List<Player> _MovingPlayers = new();
 
 
     [Header("MATH")]
     public float moneyInHousingMarket;
-    public float averageOwnedHousePrice; // average price of owned houses across the board
+    public float medianHousePrice;
     public float medianOwnedHousePrice;
     public float averageHousePrice;
-    public float medianHousePrice;
+    public float averageOwnedHousePrice; // average price of owned houses across the board
 
     public float N_0; // # movers / # avail lots ==> average lot interest
     public bool takeOut0s = true;
@@ -71,20 +75,35 @@ public class MovingManager : MonoBehaviour
     void UpdateLots() {
         // add wait in here
         (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice) = HousingMarket();
-        (averageHousePrice, medianHousePrice) = (Lots.Average(l => l.Value.currentPrice),
-                                                MyUtils.Median(Lots.Select(d => d.Value.currentPrice).ToArray()));
+        (averageHousePrice, medianHousePrice) = (Lots.Average(l => l.Key.currentPrice),
+                                                MyUtils.Median(Lots.Select(d => d.Key.currentPrice).ToArray()));
         N_0 = BaselineInterest();
+        
+        // do the least counting
+        if (Players.Count < Lots.Count) {
+            foreach((Player player, Lot lot) in Players) DownstreamBuyHouse(player, lot);
+        } else {
+            foreach((Lot lot, Player player) in Lots) DownstreamBuyHouse(player, lot);
+        }
+        
 
     }
 
     public Lot GetRandomAvailable() {
         var values = AvailableLots.Where(item => item.Value == true).Select(item => item.Key).ToList();
-        var randLot = values.PopRandom();
-        return Lots[randLot];
+        if (values.Count > 0 ) return values.PopRandom();
+        else return null;
     }
 
     public void BuyHouse(Player player, Lot lot) 
     {
+        Lots[lot] = player;
+        Players[player] = lot; // ensures only 1 house to 1 lot ownershio
+    }
+
+    public void DownstreamBuyHouse(Player player, Lot lot) {
+        if (player == null || lot == null) return;
+
         player.currentLot = lot;
         lot.owner = player;
         
@@ -98,32 +117,37 @@ public class MovingManager : MonoBehaviour
             l.PotentialBuyers.Remove(player);
         }
 
-        AvailableLots[lot.gameObject.name] = false;
-        MovingPlayers[player.gameObject.name] = false;
+        AvailableLots[lot] = false;
+        MovingPlayers[player] = false;
 
         player.expense = lot.currentPrice;
         (player.costliness, player.quality) =  player.CalculateStats(lot);
         if (player.quality > player.qualityGoal) {
             player.qualityGoal = player.quality; // improve ur quality standards to match this house
         }
+
+        player.UpdatePosition();
     }
 
     public void MoveOut(Player player)
     {
         player.InterestedIn = new();
+        Players[player] = null; // ensures only 1 house to 1 lot ownershio
+
 
         // if you actually own a house right now give that up and put it onto market
         if (player.currentLot != null) {
             Lot lot = player.currentLot;
             lot.state = LotState.ON_MARKET;
-            AvailableLots[lot.gameObject.name] = true;
+            AvailableLots[lot] = true;
             lot.owner = null;
             lot.PotentialBuyers = new();
+            Lots[lot] = null;
         }
         
 
         player.SetState(PlayerState.MOVING);
-        MovingPlayers[player.gameObject.name] = true;
+        MovingPlayers[player] = true;
         (player.expense, player.costliness, player.quality) = (0f,0f,Mathf.NegativeInfinity); // technically homeless i guess
 
         // hello! you're just freshly moving!!!
@@ -134,11 +158,12 @@ public class MovingManager : MonoBehaviour
 
         player.currentLot = null;
         player.numMoves++;
+        player.UpdatePosition();
     }
 
     public void AddInterest(Player player, Lot lot) 
     {
-
+        if (lot == null) return; //ran out of housing lol
         player.InterestedIn.Add(lot);
         lot.PotentialBuyers.InsertInOrder(player); // most to least money
 
@@ -154,9 +179,9 @@ public class MovingManager : MonoBehaviour
     {
         List<float> prices = new();
 
-        foreach ((string name, bool avail) in AvailableLots) {
+        foreach ((Lot lot, bool avail) in AvailableLots) {
             if (!avail) {
-                prices.Add(Lots[name].currentPrice);
+                prices.Add(lot.currentPrice);
             }
         }
         if (prices.Count == 0) return (0,0,0);
@@ -170,9 +195,9 @@ public class MovingManager : MonoBehaviour
     {
         int numInterested = 0;
         int numAvail = 0;
-        foreach ((string name, bool avail) in AvailableLots) {
+        foreach ((Lot lot, bool avail) in AvailableLots) {
             if (avail) {
-                var tmp = Lots[name].PotentialBuyers.Count(); // remove 0's??
+                var tmp = lot.PotentialBuyers.Count(); // remove 0's??
                 if (takeOut0s && tmp > 0 || !takeOut0s) {
                     numAvail ++;
                     numInterested += tmp;

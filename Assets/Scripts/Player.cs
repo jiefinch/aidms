@@ -25,6 +25,7 @@ public class Player : MonoBehaviour
     public SocioClass socioClass;
     public float income;
     public float expense;
+    public float econRank; // [-1,1] in terms of econmoic standing
     public Lot currentLot = null;
 
     [Header("HISTORY")]
@@ -59,19 +60,10 @@ public class Player : MonoBehaviour
         SimManager.instance.nextStep.AddListener(UpdatePlayer);
         InterestedIn = new();
         InterestedInBuyChance = new();
-
-        float color = income / SimManager.instance.highestIncome;
-        GetComponent<ColorChanger>().R = color;
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-    } 
-
+    
     void UpdatePlayer() 
     {
-        
         if (state == PlayerState.MOVING) {
             unitsSpentMoving++;
             timeUnitsMoving++;
@@ -84,7 +76,6 @@ public class Player : MonoBehaviour
 
             if (prevState == PlayerState.MOVING) prevState = PlayerState.STATIC;
         }
-
         if (prevState != state) UpdatePosition();
     }
 
@@ -143,7 +134,7 @@ public class Player : MonoBehaviour
         // 2. remove any unavailable lots
         List<Lot> temp = new();
         for (int i = 0; i < InterestedIn.Count(); i++) {
-            bool avail = MovingManager.instance.AvailableLots[InterestedIn[i].gameObject.name];
+            bool avail = MovingManager.instance.AvailableLots[InterestedIn[i]];
             if (avail) temp.Add(InterestedIn[i]);
         }
         InterestedIn = temp;
@@ -151,7 +142,6 @@ public class Player : MonoBehaviour
         // more time you've spent moving, the less you care about quality
         qualityGoal*=1-SimManager.instance.qualityGoalDeterioration;           
     }
-
 
     void ConsiderMoving() {
         float randValue = UnityEngine.Random.value;        
