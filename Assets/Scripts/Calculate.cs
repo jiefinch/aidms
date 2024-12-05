@@ -15,14 +15,15 @@ public class Calculate
     // chat gptfied
     public static float StaticLotPrice(Lot lot)
     {
-        // Normalize attractiveness ([-10, 10] to [0, 1]) : F(A)
-        float attractivenessMultiplier = (1+(lot.attractiveness / 10))*2f;
+        // Normalize attractiveness ([-10, 10] to [0, 2]) : F(A)
+        float attractivenessMultiplier = (float)(lot.attractiveness+20f)/10f;
 
         // see below for G(I): median income
         var incomeDistribution = SimManager.instance.incomeDistribution.ToArray();
         float incomeMultiplier = IncomeManagement.CalculateIncomeMultiplier(incomeDistribution);
 
         // Calculate price
+        // if (attractivenessMultiplier == 0) attractivenessMultiplier = 0.01f; // truly abhorrent piece of land
         float price = attractivenessMultiplier * incomeMultiplier;
 
         // Debug.Log($"static price: {price} | A{lot.attractiveness} Inc{incomeMultiplier}");
@@ -60,6 +61,8 @@ public class Calculate
 
     public static float ChanceOfMoving(Player player) 
     {
+        if (player.costliness > 1) return 1f; // special case: u cant afford. hell yeah u wanna get out LOL
+
         var (S_a, S_c) = LotSatisfaction(player);
         float P = 1 - (player.WeightAttr*S_a + player.WeightCost*S_c);
         // chance of movign out: how satisfied w/ attraction you are * how much do u care abt attractiveness
@@ -75,9 +78,8 @@ public class Calculate
         // cost quality [-1, 1] : W * costliness mapped to [-1,1]
         // attractive quality [-1, 1] : W * lot.attractiveness/10f;
 
-
         float costliness = lot.currentPrice / player.income; // [0,1]
-        if (costliness > 1) return 0; // cant even afford it bro
+        if (costliness > 1) return -2; // cant even afford it bro || -2
         float goodPrice = 1 - costliness;  // [0,1] >> reverse it so 1 = good
 
         float costScore =  2 * goodPrice - 1;  // Shift to [-1, 1] range
@@ -102,19 +104,15 @@ public class Calculate
         return (S_a, S_c);
     }
 
-    public static (float, float) QualityOnMarket(Player player) {
+    public static float MaxQualityOnMarket(Player player) {
         float maxQuality = 0f;
         List<float> qualities = new();
-        foreach ((Lot lot, bool avail) in MovingManager.instance.AvailableLots) {
-            if (avail) {
-                var q = QualityOfLot(lot, player);
-                qualities.Add(q);
-
-                if (q > maxQuality) maxQuality = q;
-            }
+        foreach (Lot lot in MovingManager.instance.AvailableLots) {
+            var q = QualityOfLot(lot, player);
+            qualities.Add(q);
+            if (q > maxQuality) maxQuality = q;
         }
-
-        return qualities.Count > 0 ? (maxQuality, MyUtils.Median(qualities.ToArray())) : (maxQuality, 0f);
+        return maxQuality;
     }
 }
 

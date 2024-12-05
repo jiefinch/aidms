@@ -37,7 +37,7 @@ public class SimManager : MonoBehaviour
     public int numHigh = 1;
     [HideInInspector] public int numPeople;
     public GameObject player;
-    public float qualityGoalDeterioration = 0.1f; // longer u're homeless for, reduce 10% your standards
+    public float qualityGoalDeterioration = 0.1f; // longer u wanted to move for, reduce your standards for a house
 
     [Header("CLASS PARAMS")]
     public float MoneyInCirculation = 1000; // per time unit, generated from the nether
@@ -92,6 +92,7 @@ public class SimManager : MonoBehaviour
     void Start()
     {
         numPeople = numLow + numHigh + numMid;
+        Debug.Assert(numPeople <= cols*rows, $"NOT ENOUGH LOTS. #PEOPLE: {numPeople}, #LOTS{cols*rows}");
         if (!DataCollection.instance.saveData) InitializeSimulation();
     }
 
@@ -100,6 +101,7 @@ public class SimManager : MonoBehaviour
         InstatiatePlayers();
         medianIncome = MyUtils.Median(incomeDistribution.ToArray());
         lowestIncome = incomeDistribution.Min();
+        foreach(Lot lot in MovingManager.instance.Lots.Keys) lot.currentPrice = Calculate.StaticLotPrice(lot);
         InitializePlayers();
 
         initialized = true;
@@ -156,8 +158,8 @@ public class SimManager : MonoBehaviour
 
                 // intialize the lot
                 Lot settings = instance.GetComponent<Lot>();
-                MovingManager.instance.Lots.Add(settings, null);
-                MovingManager.instance.AvailableLots.Add(settings, true); // lot is available! ^__^
+                MovingManager.instance.Lots.Add(settings, null); // no one in dah houseee
+                MovingManager.instance.AvailableLots.Add(settings);
                 settings.deteriorationChance = deteriorationChance;
                 if (randomizeAttractiveness) {
                     settings.attractiveness = UnityEngine.Random.Range(-10,11); // [-10,10]
@@ -181,19 +183,11 @@ public class SimManager : MonoBehaviour
                 instance.name = $"player({socio}{i})";
 
                 Player settings = instance.GetComponent<Player>();
-                MovingManager.instance.Players.Add(settings, null);
-                MovingManager.instance.MovingPlayers.Add(settings, false);
+                MovingManager.instance.Players.Add(settings, null); // no house yet!!!
 
                 settings.socioClass = socio;
                 settings.income = pieDistribution[i];
                 if (pieDistribution[i] > highestIncome) highestIncome = pieDistribution[i];
-
-                // give em a random house
-                Lot lot = MovingManager.instance.GetRandomAvailable();
-                MovingManager.instance.BuyHouse(settings, lot);
-                lot.currentPrice = Calculate.StaticLotPrice(lot);
-
-                settings.UpdatePosition();
             }
         }
         instantiateClass(numLow, SocioClass.LOW, percentsOwned.Low);
@@ -201,12 +195,31 @@ public class SimManager : MonoBehaviour
         instantiateClass(numHigh, SocioClass.HIGH, percentsOwned.High);
     }
     void InitializePlayers() {
-        foreach (Player player in MovingManager.instance.Players.Keys) {
-            (player.maxQuality, player.qualityGoal) = Calculate.QualityOnMarket(player);
+        for (int i = 0; i < MovingManager.instance.Players.Count; i++) {
+            var item = MovingManager.instance.Players.ElementAt(i);
+            Player player = item.Key;
+            
+            // give em a random house
+            Lot lot = MovingManager.instance.AvailableLots.PopRandom();
             (player.WeightCost, player.WeightAttr) = IncomeManagement.Weights(player);
+            player.quality = Calculate.QualityOfLot(lot, player);
+            player.MoveToLot(lot);
+
             player.econRank = IncomeManagement.ScaleToRange(player.income);
             float color = (player.econRank+1f)/2f; // chance [-1,1] => [0,1]
             player.GetComponent<ColorChanger>().R = color;
+
+            player.UpdatePosition();
+
+        }
+
+        // second iteration
+        for (int i = 0; i < MovingManager.instance.Players.Count; i++) {
+            var item = MovingManager.instance.Players.ElementAt(i);
+            Player player = item.Key;
+
+            player.maxQuality = Calculate.MaxQualityOnMarket(player);
+            player.qualityGoal = player.quality > player.maxQuality ? player.quality : player.maxQuality;
         }
     }
 

@@ -162,8 +162,6 @@ public class DataCollection : MonoBehaviour
         output.medianHousePrice = point.medianHousePrice;
         output.averageOwnedHousePrice = point.averageOwnedHousePrice;
         output.medianOwnedHousePrice = point.medianOwnedHousePrice;
-        output.movingPlayers = point._MovingPlayers.Count;
-        output.housedRate = (float) output.movingPlayers / SimManager.instance.numPeople;
         // output.movingPlayersIncomeDistribution = point._MovingPlayers.Select(player => player.income).ToList();
         // do that later
         return output;

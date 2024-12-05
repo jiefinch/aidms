@@ -7,7 +7,7 @@ using System;
 
 public static class ListExtensions
 {
-    public static T PopRandom<T>(this List<T> list)
+    public static (int,T) GetRandom<T>(this List<T> list)
     {
         if (list == null || list.Count == 0)
         {
@@ -21,8 +21,16 @@ public static class ListExtensions
         // Get the element at the random index
         T element = list[randomIndex];
 
+        // Return the popped element
+        return (randomIndex, element);
+    }
+
+    public static T PopRandom<T>(this List<T> list)
+    {
+        var (idx, element) = list.GetRandom();
+
         // Remove the element from the list
-        list.RemoveAt(randomIndex);
+        list.RemoveAt(idx);
 
         // Return the popped element
         return element;
