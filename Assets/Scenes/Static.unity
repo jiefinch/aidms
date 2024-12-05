@@ -620,16 +620,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lotManager: {fileID: 1167864541}
   rows: 5
-  cols: 5
+  cols: 13
   lot: {fileID: 8759755288784404981, guid: 1cb55a328b96a1247950c2b9bf1192da, type: 3}
   spacing: 2.1
   lotSize: 2
-  randomizeAttractiveness: 1
   deteriorationChance: 0
   playerManager: {fileID: 1293873606}
-  numLow: 5
-  numMid: 5
-  numHigh: 5
+  numLow: 10
+  numMid: 10
+  numHigh: 10
   numPeople: 0
   player: {fileID: 5208202849121193467, guid: c9053dd8619ee814980ddf51040e5230, type: 3}
   qualityGoalDeterioration: 0.1
@@ -648,6 +647,19 @@ MonoBehaviour:
   nextStep:
     m_PersistentCalls:
       m_Calls: []
+  controlAttractiveness: 1
+  means:
+  - -7
+  - 0
+  - 9
+  stdDevs:
+  - 2
+  - 0
+  - 2
+  prob:
+  - 0.8
+  - 0
+  - 0.2
   dynamicPricingPercent: 0
 --- !u!114 &1351003866
 MonoBehaviour:
@@ -669,7 +681,7 @@ MonoBehaviour:
   averageOwnedHousePrice: 0
   N_0: 0
   takeOut0s: 1
-  toConsider: 3
+  toConsider: 1
 --- !u!114 &1351003867
 MonoBehaviour:
   m_ObjectHideFlags: 0

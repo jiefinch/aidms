@@ -16,11 +16,10 @@ public struct MovingHistory {
 
 public class MovingManager : MonoBehaviour
 {
-    // public Dictionary<string, Player> Players = new();
-    // public Dictionary<string, Lot> Lots = new();
 
     public Dictionary<Lot, Player> Lots = new();
     public Dictionary<Player, Lot> Players = new();
+
 
 
     [Header("INFORMATION")]
@@ -61,7 +60,7 @@ public class MovingManager : MonoBehaviour
 
     void Update() 
     {
-        instance.UpdateAvailLots();
+        // instance.UpdateAvailLots();
     }
 
 
@@ -75,18 +74,8 @@ public class MovingManager : MonoBehaviour
 
 
 
-    // ========================================== HELPERS ==========================================
 
-    public void UpdateAvailLots() {
-        AvailableLots = Lots.Where(item => item.Value == null).Select(item => item.Key).ToList();
-    }
 
-    public void AddInterest(Player player, Lot lot) 
-    {
-        if (lot == null) return; //ran out of housing lol
-        player.InterestedIn.Add(lot);
-        lot.PotentialBuyers.InsertInOrder(player); // most to least money
-    }
 
     // ========================================== MATH ==========================================
 

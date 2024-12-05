@@ -16,14 +16,13 @@ public class Calculate
     public static float StaticLotPrice(Lot lot)
     {
         // Normalize attractiveness ([-10, 10] to [0, 2]) : F(A)
-        float attractivenessMultiplier = (float)(lot.attractiveness+20f)/10f;
+        float attractivenessMultiplier = (float)(lot.attractiveness+10f)/10f;
 
         // see below for G(I): median income
         var incomeDistribution = SimManager.instance.incomeDistribution.ToArray();
         float incomeMultiplier = IncomeManagement.CalculateIncomeMultiplier(incomeDistribution);
 
         // Calculate price
-        // if (attractivenessMultiplier == 0) attractivenessMultiplier = 0.01f; // truly abhorrent piece of land
         float price = attractivenessMultiplier * incomeMultiplier;
 
         // Debug.Log($"static price: {price} | A{lot.attractiveness} Inc{incomeMultiplier}");
@@ -61,7 +60,14 @@ public class Calculate
 
     public static float ChanceOfMoving(Player player) 
     {
-        if (player.costliness > 1) return 1f; // special case: u cant afford. hell yeah u wanna get out LOL
+        if (player.costliness > 1f) {
+            Debug.LogWarning("special case, cost over");
+            return 1f;
+        } // special case: u cant afford. hell yeah u wanna get out LOL
+
+        if (player.expense > player.income) {
+            Debug.LogWarning("is this better");
+        }
 
         var (S_a, S_c) = LotSatisfaction(player);
         float P = 1 - (player.WeightAttr*S_a + player.WeightCost*S_c);

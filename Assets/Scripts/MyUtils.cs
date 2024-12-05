@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Numerics;
 using System;
+using Unity.VisualScripting;
 
 public static class ListExtensions
 {
@@ -74,6 +75,20 @@ public static class ListExtensions
         return matchingIndices[randomIndex];
     }
 
+    private static System.Random rng = new System.Random();  
+    public static void Shuffle<T>(this IList<T> list)  
+    {  
+        int n = list.Count;  
+        while (n > 1) {  
+            n--;  
+            int k = rng.Next(n + 1);  
+            T value = list[k];  
+            list[k] = list[n];  
+            list[n] = value;  
+        }  
+    }
+
+
 }
 
 public static class MyUtils {
@@ -112,6 +127,49 @@ public static class MyUtils {
         var trimmedValues = sortedValues.Skip(trimCount).Take(sortedValues.Length - 2 * trimCount).ToArray();
         return trimmedValues.Average();
     }
+
+    private static System.Random random = new System.Random();
+    // Box-Muller Transform
+    public static float GaussianRandomValue(float mean, float stdDev)
+    {
+
+        float u1 = 1.0f - (float)random.NextDouble(); // Uniform random variable between 0 and 1
+        float u2 = 1.0f - (float)random.NextDouble();
+        float z0 = Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Cos(2.0f * Mathf.PI * u2); // Gaussian distribution
+        return mean + z0 * stdDev;
+    }
+
+    public static int[] GuassedRandom(int num, float[] means, float[] stdDevs, float[] prob) {
+        // float randValue = UnityEngine.Random.value;
+        // i trust u to be all 3
+        
+        
+
+        List<int> randoms = new();
+        float bit = (float)1/num;
+        float counter = 0;
+        int i = 0;
+        for (int n = 0; n < num; n++) {
+            if (counter < prob[0]) {
+                i = 0;
+            } else if (counter < prob[0] + prob[1]) {
+                i = 1;
+            } else {
+                // prob[0] + prob[1] + prob[2] should be 1
+                i = 2;
+            }
+            var (mean, stdDev) = (means[i], stdDevs[i]);
+            float guass = GaussianRandomValue(mean, stdDev);
+            int a = Mathf.Clamp((int)Mathf.Round(guass), -10, 10);
+            randoms.Add(a);
+            counter += bit;
+        }
+
+        randoms.Shuffle();
+        return randoms.ToArray();
+        
+    }
+
 
 
 }

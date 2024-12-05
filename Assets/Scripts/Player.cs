@@ -28,7 +28,6 @@ public class Player : MonoBehaviour
     [Header("HISTORY")]
     public int numMoves;
     public int unitsSpentMoving;
-    private int timeUnitsMoving;
 
     [Header("GAME")]
     public float costliness; // expense : income => want to minimize [0-1] => must be less than 1
@@ -49,6 +48,7 @@ public class Player : MonoBehaviour
     void UpdatePlayer() 
     {
         ConsiderMoving();
+
     }
 
     public void UpdatePosition() {
@@ -60,7 +60,6 @@ public class Player : MonoBehaviour
     void ConsiderMoving() {
         float randValue = UnityEngine.Random.value;        
         if (randValue < Calculate.ChanceOfMoving(this)) {
-
             Lot lot = ConsiderOptions(); // is there a lot i wanna buy?
             if (lot != null) MoveToLot(lot); // yes! let's move there.
             else Wait(); // no, add another place i'm looking to move.
@@ -85,6 +84,12 @@ public class Player : MonoBehaviour
             }
         }
 
+        if (buyLot != null) {
+            foreach (Player player in buyLot.PotentialBuyers) {
+                player.InterestedIn.Remove(buyLot);
+            } // STOP LOOKING AT ME >____<
+        }
+
         return buyLot;
     }
 
@@ -98,35 +103,36 @@ public class Player : MonoBehaviour
         for (int i = 0; i < toAdd; i ++) {
             // get random avail
             Lot lot = MovingManager.instance.AvailableLots.GetRandom().Item2;
-            MovingManager.instance.AddInterest(this, lot);
+            InterestedIn.Add(lot);
+            lot.PotentialBuyers.Add(this); 
         }
-        
-        // 2. remove any unavailable lots
-        List<Lot> temp = new();
-        for (int i = 0; i < InterestedIn.Count(); i++) {
-            bool avail = MovingManager.instance.Lots[InterestedIn[i]] == null;
-            if (avail) temp.Add(InterestedIn[i]);
-        }
-        InterestedIn = temp;
-            
-        // more time you've spent wanting to move, the less you care about quality of the place u moving to
         if (qualityGoal>-1f) qualityGoal-=SimManager.instance.qualityGoalDeterioration;
     }
 
+
     public void MoveToLot(Lot lot) {
-        if (currentLot != null) MovingManager.instance.Lots[currentLot] = null;
         // put in dah new guys
         MovingManager.instance.Lots[lot] = this;
         MovingManager.instance.Players[this] = lot;
+        if (MovingManager.instance.AvailableLots.Contains(lot)) MovingManager.instance.AvailableLots.Remove(lot);
+        if (currentLot != null) {
+            MovingManager.instance.AvailableLots.Add(currentLot);
+            currentLot.owner = null;
+            currentLot.state = LotState.ON_MARKET;
+        }
+
+        // no longer an option for ya kids
+        foreach(Player player in lot.PotentialBuyers) {
+            player.InterestedIn.Remove(lot);
+        }
+        
 
         InterestedIn = new();
         lot.PotentialBuyers = new();
 
 
-        // do mutual plot-lotting
         currentLot = lot;
         lot.owner = this;
-
         lot.state = LotState.OFF_MARKET;
         expense = lot.currentPrice;
 
@@ -134,12 +140,10 @@ public class Player : MonoBehaviour
         if (quality > qualityGoal) {
             qualityGoal = quality; // improve ur quality standards to match this house
         }
-
         // remove self from all the housese u were interested in
         foreach(Lot l in InterestedIn) {
             l.PotentialBuyers.Remove(this);
         }
-
 
         numMoves++;    
         UpdatePosition();

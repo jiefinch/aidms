@@ -26,7 +26,6 @@ public class SimManager : MonoBehaviour
     public GameObject lot;
     public float spacing = 1.0f;
     public float lotSize = 2.0f; 
-    public bool randomizeAttractiveness = true;
     public float deteriorationChance = 0.5f;
 
     [Header("PLAYER PARAMS")]
@@ -67,6 +66,12 @@ public class SimManager : MonoBehaviour
 
     [Header("MATH")]
     // 𝑅 = chance of buying
+    
+    public bool controlAttractiveness = true;
+    public float[] means;
+    public float[] stdDevs;
+    public float[] prob;
+
     public float dynamicPricingPercent = 0.5f;  // 0: does not factor individual income | 1: max factoring
         // λ: This parameter controls how much the individual's income influences the price. If λ = 1 λ=1, the price is adjusted directly
         // by the percentage difference in income. If λ = 0 λ=0, the income difference has no effect on the price.
@@ -161,12 +166,25 @@ public class SimManager : MonoBehaviour
                 MovingManager.instance.Lots.Add(settings, null); // no one in dah houseee
                 MovingManager.instance.AvailableLots.Add(settings);
                 settings.deteriorationChance = deteriorationChance;
-                if (randomizeAttractiveness) {
-                    settings.attractiveness = UnityEngine.Random.Range(-10,11); // [-10,10]
-                }
-
             }
         }
+
+        int num = MovingManager.instance.Lots.Count;
+        int[] a = MyUtils.GuassedRandom(num, means, stdDevs, prob);
+        
+        for (int i = 0; i < num; i++) {
+            var item = MovingManager.instance.Lots.ElementAt(i);
+            Lot lot = item.Key;
+            if (controlAttractiveness) {
+                lot.attractiveness = a[i];
+            }  else {
+                lot.attractiveness = UnityEngine.Random.Range(-10,11);
+            }
+            
+        }
+
+        
+
     }
 
     void InstatiatePlayers() 
@@ -220,6 +238,8 @@ public class SimManager : MonoBehaviour
 
             player.maxQuality = Calculate.MaxQualityOnMarket(player);
             player.qualityGoal = player.quality > player.maxQuality ? player.quality : player.maxQuality;
+
+            if (player.econRank == 1) Debug.Log($"{player.gameObject.name} || curr{player.quality} || goal{player.qualityGoal} || goal{player.maxQuality}");
         }
     }
 
