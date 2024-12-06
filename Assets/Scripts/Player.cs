@@ -39,7 +39,7 @@ public class Player : MonoBehaviour
     [HideInInspector] public float maxQuality = 0f;
     public float qualityGoal;
     public float quality; // attractiveness : costliness => want to maximize [0/[0-1] : 20/[0:1]]
-    public Dictionary<Lot, int> InterestedIn;
+    public Dictionary<Lot, int> InterestedIn = new();
     public Lot[] _InterestedIn; // list of lots
     [HideInInspector] public float WeightCost = 0f;
     [HideInInspector] public float WeightAttr = 0f;

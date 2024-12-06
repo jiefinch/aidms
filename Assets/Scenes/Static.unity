@@ -645,24 +645,24 @@ MonoBehaviour:
   nextStep:
     m_PersistentCalls:
       m_Calls: []
-  controlAttractiveness: 0
+  controlAttractiveness: 1
   means:
   - -10
   - 0
-  - 3
+  - 5
   stdDevs:
   - 2
   - 0
   - 2
   prob:
-  - 0.75
+  - 0.8
   - 0
-  - 0.25
+  - 0.2
   initInterestDropChance: 0.01
   interestDeterioration: 0.5
   qualityGoalDeterioration: 0.1
   lotDeteriorationAmount: 0
-  dynamicPricingPercent: 1
+  dynamicPricingPercent: 0
 --- !u!114 &1351003866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,7 +698,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   saveData: 0
   scenario: test
-  numSims: 1
+  numSims: 2
+  currSim: 0
+  simRunning: 0
   numTimeUnits: 10
 --- !u!1 &1464171917
 GameObject:

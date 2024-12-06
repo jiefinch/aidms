@@ -60,6 +60,7 @@ public class SimManager : MonoBehaviour
     private float timer;
     DateTime startTime;
     public UnityEvent nextStep;
+    // public UnityEvent simulationEnd;
 
 
     [Header("MATH")]
@@ -104,26 +105,6 @@ public class SimManager : MonoBehaviour
         if (!DataCollection.instance.saveData) InitializeSimulation();
     }
 
-    public void InitializeSimulation() {
-        InstantiateGrid();
-        InstatiatePlayers();
-        medianIncome = MyUtils.Median(incomeDistribution.ToArray());
-        lowestIncome = incomeDistribution.Min();
-        foreach(Lot lot in MovingManager.instance.Lots.Keys) lot.currentPrice = Calculate.StaticLotPrice(lot);
-        InitializePlayers();
-
-        initialized = true;
-        startTime = DateTime.Now;
-        Debug.Log("intialized done");
-    }
-
-    public void DestroySimulation() {
-        initialized = false;
-        timer = 0;
-        foreach(Transform child in lotManager.transform) Destroy(child.gameObject);
-        foreach(Transform child in playerManager.transform) Destroy(child.gameObject);
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -144,6 +125,9 @@ public class SimManager : MonoBehaviour
 
     void InstantiateGrid()
     {
+        MovingManager.instance.Lots = new();
+        MovingManager.instance.AvailableLots = new();
+
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
@@ -246,6 +230,31 @@ public class SimManager : MonoBehaviour
             player.qualityGoal = player.quality > player.maxQuality ? player.quality : player.maxQuality;
 
         }
+    }
+
+
+    // ========================= SIMULATION RUNNERS ============================
+
+    public void InitializeSimulation() {
+        InstantiateGrid();
+        InstatiatePlayers();
+        medianIncome = MyUtils.Median(incomeDistribution.ToArray());
+        lowestIncome = incomeDistribution.Min();
+        foreach(Lot lot in MovingManager.instance.Lots.Keys) lot.currentPrice = Calculate.StaticLotPrice(lot);
+        InitializePlayers();
+
+        initialized = true;
+        startTime = DateTime.Now;
+        Debug.Log("intialized done");
+    }
+
+    public void DestroySimulation() {
+        initialized = false;
+        timer = 0;
+        timeUnit = 0;
+        nextStep.RemoveAllListeners();
+        foreach(Transform child in lotManager.transform) Destroy(child.gameObject);
+        foreach(Transform child in playerManager.transform) Destroy(child.gameObject);
     }
 
 }

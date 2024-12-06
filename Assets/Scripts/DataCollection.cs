@@ -15,6 +15,8 @@ public class DataCollection : MonoBehaviour
     public bool saveData;
     public string scenario;
     public int numSims = 1;
+    public int currSim = 0;
+    public bool simRunning = false;
     public int numTimeUnits;
 
     // ===============================
@@ -57,50 +59,59 @@ public class DataCollection : MonoBehaviour
         rootPath = Application.dataPath;
         dataPath = Path.Combine(rootPath, "Data"); //rootPath + $"/Data/";
         
-        if (saveData) RunSimulation(); 
+        // if (saveData) RunSimulation(); 
     }
 
-    public async void RunSimulation()
-    {
-        for (int sim = 0; sim < numSims; sim++)
-        {
-            NewRecording();
-            SimManager.instance.InitializeSimulation(); // begins running the simulation
+    void Update() {
 
-            // Wait until SimManager.timeUnit reaches 100
-            await WaitForTimeUnit(numTimeUnits);
-
-            // Once timeUnit reaches XXX, call endSim
-            SimManager.instance.DestroySimulation();
-            SaveRecording(sim, Data);
+        if (saveData) {
+            if (currSim < numSims) {
+                if (!simRunning) {
+                    Data = RunSimulation(currSim);
+                    simRunning = true;
+                }
+                if (numTimeUnits <= SimManager.instance.timeUnit) {
+                    EndSimulation(currSim, Data);
+                    simRunning = false;
+                }
+            }
+            
         }
     }
 
-    private async Task WaitForTimeUnit(int targetTimeUnit)
+    public RecordedData RunSimulation(int i)
     {
-        // Wait until SimManager's timeUnit reaches the target value
-        while (SimManager.instance.timeUnit < targetTimeUnit)
-        {
-            await Task.Delay(100); // Delay for 100 ms before checking again
-        }
+        var Data = NewRecording();
+        SimManager.instance.InitializeSimulation();
+        return Data;
     }
 
-    void NewRecording() 
+    public void EndSimulation(int i, RecordedData Data)
     {
-        Data = new();
+        SimManager.instance.DestroySimulation();
+        // SaveRecording(i, Data);
+        Debug.Log($"{currSim} done");
+        currSim++;
+    }
+
+
+    RecordedData NewRecording() 
+    {
+        RecordedData Data = new();
         Data.SimParams = new();
         Data.MovingHistory = new();
         Data.PlayerHistories = new();
         Data.LotHistories = new();
+        return Data;
     }
 
-    public void SaveRecording(int simNum, RecordedData Data) {
+    public void SaveRecording(int i, RecordedData Data) {
         // SaveParameters(Data);
         Add(SimManager.instance);
 
         // string outputFilePath = $"{dataPath}/{saveNumber()}.json";
         string date = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm");
-        string fileName = $"{scenario}{simNum}_{date}";
+        string fileName = $"{scenario}{i}_{date}";
         string outputFilePath = Path.Combine(dataPath, $"{fileName}.json");
 
         // convert and save

@@ -63,6 +63,13 @@ public class Lot : MonoBehaviour
 
 
     }
-    
+
+    // ========================= DATA SAVING ============================
+
+    // SimManager.instance.nextStep.AddListener(SaveDataPoint);
+    // public void SaveDataPoint() {
+    //     MovingHistory history = NewDataPoint(MovingManager.instance);
+    //     Add(history);
+    // }
 
 }
