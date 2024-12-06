@@ -139,11 +139,10 @@ public static class MyUtils {
         return mean + z0 * stdDev;
     }
 
+    // min and max [-10,10] hardcoded for usecase in attractiveness
     public static int[] GuassedRandom(int num, float[] means, float[] stdDevs, float[] prob) {
         // float randValue = UnityEngine.Random.value;
         // i trust u to be all 3
-        
-        
 
         List<int> randoms = new();
         float bit = (float)1/num;
@@ -160,7 +159,7 @@ public static class MyUtils {
             }
             var (mean, stdDev) = (means[i], stdDevs[i]);
             float guass = GaussianRandomValue(mean, stdDev);
-            int a = Mathf.Clamp((int)Mathf.Round(guass), -10, 10);
+            int a = (int)Mathf.Clamp(Mathf.Round(guass), -10, 10);
             randoms.Add(a);
             counter += bit;
         }

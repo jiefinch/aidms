@@ -40,14 +40,6 @@ public class Lot : MonoBehaviour
         SimManager.instance.nextStep.AddListener(UpdateLot);
     }
 
-    void Update() {
-        // erm what te fuck
-        if (currentPrice < 0 && attractiveness == -10) currentPrice = 0; // reset
-        if (currentPrice < 0 ) Debug.Log($"{name} youre fucked {attractiveness}");
-    }
-
-
-
     void UpdateLot() 
     {
 
