@@ -11,7 +11,6 @@ public struct MovingHistory {
     public float medianHousePrice;
     public float averageOwnedHousePrice;
     public float medianOwnedHousePrice;
-    public float housedRate; // % of people currently housed. movingPlayers / numPlayers
 }
 
 public class MovingManager : MonoBehaviour
@@ -127,6 +126,13 @@ public class MovingManager : MonoBehaviour
         return (float)numInterested/numAvail;
 
     }
-    
+
+    // ========================= DATA SAVING ============================
+
+    // SimManager.instance.nextStep.AddListener(SaveDataPoint);
+    // public void SaveDataPoint() {
+    //     MovingHistory history = NewDataPoint(MovingManager.instance);
+    //     Add(history);
+    // }
 
 }

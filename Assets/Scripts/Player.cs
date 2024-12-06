@@ -11,9 +11,14 @@ public enum SocioClass {
 }
 
 public struct PlayerHistory {
+    public float income;
     public float expense;
     public float costliness;
-    public int attractiveness;
+    public int attractiveness; // r u housed
+    public int numMoves;
+    public float qualityGoal;
+    public float quality; 
+    public int interestedIn;
 }
 
 public class Player : MonoBehaviour
@@ -27,7 +32,7 @@ public class Player : MonoBehaviour
 
     [Header("HISTORY")]
     public int numMoves;
-    public int unitsSpentMoving;
+
 
     [Header("GAME")]
     public float costliness; // expense : income => want to minimize [0-1] => must be less than 1
@@ -49,17 +54,17 @@ public class Player : MonoBehaviour
         _InterestedIn = InterestedIn.Keys.ToArray();
         if (currentLot!=null) expense = currentLot.currentPrice;
     }
+
     void UpdatePlayer() 
     {
         ConsiderMoving();
-
     }
 
     public void UpdatePosition() {
         transform.position = currentLot.transform.position;
     }
 
-    /// ==================== SIM TIME
+    // ========================= SIM FUNCTIONS ============================
     
     void ConsiderMoving() {
         float randValue = UnityEngine.Random.value;        
@@ -155,9 +160,8 @@ public class Player : MonoBehaviour
         currentLot = lot;
         lot.owner = this;
         lot.state = LotState.OFF_MARKET;
-         //Calculate.DynamicLotPrice(lot).Item1;
 
-        (costliness, quality) =  CalculateStats(lot);
+        (costliness, quality) =  Calculate.LotStats(lot, this);
         if (quality > qualityGoal) {
             qualityGoal = quality; // improve ur quality standards to match this house
         }
@@ -170,15 +174,7 @@ public class Player : MonoBehaviour
         UpdatePosition();
     }
 
-
-    // HELPER =================================================================
-
-    public (float, float) CalculateStats(Lot lot) 
-    {
-        float _costliness = Calculate.DynamicLotPrice(lot).Item1 / income;
-        float _quality = Calculate.QualityOfLot(lot, this);
-        return (_costliness, _quality);
-    }
+    // ========================= DATA SAVING ============================
 
 
 }

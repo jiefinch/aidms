@@ -9,9 +9,10 @@ public enum LotState {
 }
 
 public struct LotHistory {
-    float ownerIncome;
-    float currentPrice;
-    float attractiveness;
+    public float ownerIncome;
+    public float currentPrice;
+    public float attractiveness;
+    public int PotentialBuyers;
 }
 
 public class Lot : MonoBehaviour

@@ -7,13 +7,13 @@ using UnityEngine.Events;
 using UnityEditor;
 using System.Linq;
 
-public struct SimParams {
-    public int numLots;
-    public int numPeople;
-    public List<float> incomeDistribution;
-    public int timeUnits;
-    public float dynamicPricingPercent;
-}
+// public struct SimParams {
+//     public int numLots;
+//     public int numPeople;
+//     public List<float> incomeDistribution;
+//     public int timeUnits;
+//     public float dynamicPricingPercent;
+// }
 
 public class SimManager : MonoBehaviour
 {

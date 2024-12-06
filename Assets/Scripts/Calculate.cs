@@ -44,7 +44,7 @@ public class Calculate
         
         int N = lot.PotentialBuyers.Count(); // num ppl interested
         if (N > 0) {
-            float F_interest = (float)N / MovingManager.instance.N_0;
+            float F_interest = N / MovingManager.instance.N_0;
             float F_income = lot.PotentialBuyers.Average(player => player.income) / median;
             float dynamicPrice = staticPrice * F_interest * F_income;
 
@@ -130,6 +130,15 @@ public class Calculate
         float Q = player.WeightCost * costScore + player.WeightAttr * attractiveScore;
         return Q; // [0,1]*[-1,1] + [0,1]*[-1,1] => [-1,1]
     }
+
+
+    public static (float, float) LotStats(Lot lot, Player player) 
+    {
+        float costliness = DynamicLotPrice(lot).Item1 / player.income;
+        float quality = QualityOfLot(lot, player);
+        return (costliness, quality);
+    }
+
 
     public static (float, float) LotSatisfaction(Player player)
     {

@@ -6,6 +6,7 @@ using System.IO;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using Unity.VisualScripting;
 
 
 public class DataCollection : MonoBehaviour
@@ -22,7 +23,7 @@ public class DataCollection : MonoBehaviour
         
     // =============================== DATA ======================
     public struct RecordedData {
-        public SimParams SimParams;
+        public SimManager SimParams;
         public List<MovingHistory> MovingHistory;
         public Dictionary<float, List<PlayerHistory>> PlayerHistories;
         public Dictionary<int, List<LotHistory>> LotHistories;
@@ -55,7 +56,7 @@ public class DataCollection : MonoBehaviour
     {
         rootPath = Application.dataPath;
         dataPath = Path.Combine(rootPath, "Data"); //rootPath + $"/Data/";
-        // SimManager.instance.nextStep.AddListener(SaveDataPoint);
+        
         if (saveData) RunSimulation(); 
     }
 
@@ -95,6 +96,7 @@ public class DataCollection : MonoBehaviour
 
     public void SaveRecording(int simNum, RecordedData Data) {
         // SaveParameters(Data);
+        Add(SimManager.instance);
 
         // string outputFilePath = $"{dataPath}/{saveNumber()}.json";
         string date = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm");
@@ -107,8 +109,21 @@ public class DataCollection : MonoBehaviour
     }
 
 
+ 
+    // SimManager.instance.nextStep.AddListener(SaveDataPoint);
+    // public void SaveDataPoint() {
+    //     MovingHistory history = NewDataPoint(MovingManager.instance);
+    //     Add(history);
+    // }
+
+    // public void SaveDataPoint<T>(T point) {
+    //     var history = NewDataPoint(point);
+    //     Add(history);
+    // }
+
+
     // ========================= ADD DATA FUNCTIONS ============================
-    void Add(SimParams data) {
+    void Add(SimManager data) {
         Data.SimParams = data;
     }
 
@@ -132,15 +147,6 @@ public class DataCollection : MonoBehaviour
     }
 
     // ========================= ADD POINT FUNCTIONS ============================
-    public SimParams NewDataPoint(SimManager point) {
-        SimParams output = new();
-        output.numLots = point.rows * point.cols;
-        output.numPeople = point.numPeople;
-        output.timeUnits = (int)point.timeUnit;
-        output.incomeDistribution = point.incomeDistribution;
-        output.dynamicPricingPercent = point.dynamicPricingPercent;
-        return output;
-    }
 
     public MovingHistory NewDataPoint(MovingManager point) {
         MovingHistory output = new();
@@ -149,9 +155,28 @@ public class DataCollection : MonoBehaviour
         output.medianHousePrice = point.medianHousePrice;
         output.averageOwnedHousePrice = point.averageOwnedHousePrice;
         output.medianOwnedHousePrice = point.medianOwnedHousePrice;
-        output.housedRate = 0; // # of people with lot value 0
-        // output.movingPlayersIncomeDistribution = point._MovingPlayers.Select(player => player.income).ToList();
-        // do that later
         return output;
     }
+
+    public PlayerHistory NewDataPoint(Player point) {
+        PlayerHistory output = new();
+        output.income = point.income;
+        output.expense = point.expense;
+        output.costliness = point.costliness;
+        output.attractiveness = point.currentLot.attractiveness;
+        output.numMoves = point.numMoves;
+        output.qualityGoal = point.qualityGoal;
+        output.quality = point.quality;
+        output.interestedIn = point._InterestedIn.Length;
+        return output;
+    }
+    public LotHistory NewDataPoint(Lot point) {
+        LotHistory output = new();
+        output.ownerIncome = point.owner == null ? -1 : point.owner.income;
+        output.currentPrice = point.currentPrice;
+        output.attractiveness = point.attractiveness;
+        output.PotentialBuyers = point.PotentialBuyers.Count;
+        return output;
+    }
+
 }
