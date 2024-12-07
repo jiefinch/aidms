@@ -32,7 +32,7 @@ public class Lot : MonoBehaviour
     public float F_interest = 1f;
 
     // ========
-    private ColorChanger colorChanger;
+    [HideInInspector] public ColorChanger colorChanger;
 
     // Start is called before the first frame update
     void Start()
@@ -42,14 +42,29 @@ public class Lot : MonoBehaviour
         SimManager.instance.nextStep.AddListener(UpdateLot);
     }
 
+    // void Update() {
+    //      // [0,1] => [-10,10]
+    // }
+
     void UpdateLot() 
     {
 
         // deteriorate vs no change vs gentrify
-        colorChanger.R += Calculate.ChangeInLot(this)/20f; // whewf.. got it here
-        colorChanger.R = Mathf.Clamp(colorChanger.R, 0, 1);
-        attractiveness = (int)Mathf.Round(colorChanger.R * 20) - 10; // [0,1] => [-10,10]
-        attractiveness = Mathf.Clamp(attractiveness, -10, 10);
+        float changeInLot = Calculate.ChangeInLot(this)/20f;
+        ChangeAttractiveness(changeInLot);
+
+        // if u gentrified, gentrify the neighbors
+        if (changeInLot > 0) {
+            var (neighborLots, adjacentLots) = MyUtils.GetSurroundingLots(this);
+            foreach(Lot lot in neighborLots) {
+                float change = changeInLot/2;
+                lot.ChangeAttractiveness(change);
+            }
+            foreach(Lot lot in adjacentLots) {
+                float change = changeInLot/4;
+                lot.ChangeAttractiveness(change);            
+            }
+        }
 
         (currentPrice, F_income, F_interest) = Calculate.DynamicLotPrice(this); // update dah price
         if (state == LotState.OFF_MARKET) {
@@ -58,9 +73,11 @@ public class Lot : MonoBehaviour
             // update the expense
             owner.costliness = currentPrice / owner.income;
         }
-        
+    }
 
-
+    public void ChangeAttractiveness(float change) {
+        colorChanger.R = Mathf.Clamp(change + colorChanger.R, 0,1); // whewf.. got it here
+        attractiveness = Mathf.Clamp((int)Mathf.Round(colorChanger.R * 20) - 10, -10, 10);
     }
 
     // ========================= DATA SAVING ============================

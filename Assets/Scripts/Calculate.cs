@@ -36,7 +36,9 @@ public class Calculate
         if (lot.attractiveness == -10) return (0f, 1f, 1f);
 
         float staticPrice = StaticLotPrice(lot);
-        var (median, sigma) = (SimManager.instance.medianIncome, SimManager.instance.dynamicPricingPercent);
+        var (median, sigma, discount) = (SimManager.instance.medianIncome, 
+                                        SimManager.instance.dynamicPricingPercent,
+                                        SimManager.instance.dynanmicMaxDiscount);
         
         int N = lot.PotentialBuyers.Count(); // num ppl interested
         if (N > 0) {
@@ -50,7 +52,7 @@ public class Calculate
 
             // Debug.Log($"dynamic price: {dynamicPrice} | static price: {staticPrice} | int{F_interest} inc{F_income}");
             dynamicPrice = (1-sigma)*staticPrice + sigma*dynamicPrice;
-            dynamicPrice = dynamicPrice < staticPrice*0.5 ? staticPrice : dynamicPrice;
+            dynamicPrice = dynamicPrice < staticPrice*discount ? staticPrice : dynamicPrice;
             return (dynamicPrice, F_income, F_interest);
         }
         return (staticPrice, 1f, 1f);
@@ -76,9 +78,12 @@ public class Calculate
         float d = Math.Abs(quality-qualityGoal);
 
         if (quality >= qualityGoal) {
-            return 1 - (float)Math.Exp(-(alpha*d+1.3f));
+            decimal p = (decimal)(1 - Math.Exp(-(alpha*d+1.386f)));
+            return (float)Decimal.Round(p, 2);
         } else {
-            return (float)Math.Exp(-(beta*d+0.3f));
+            double exp = Math.Exp(-beta*d-0.288f);
+            decimal p = (decimal)exp;
+            return (float)Decimal.Round(p, 2);
         }
     }
 

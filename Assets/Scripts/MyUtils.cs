@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System;
 using Unity.VisualScripting;
+using System.Text.RegularExpressions;
 
 public static class ListExtensions
 {
@@ -168,6 +169,102 @@ public static class MyUtils {
         
     }
 
+    // Get the direct (up, down, left, right) neighbors
+    public static List<int> GetDirectNeighbors(int index)
+    {
+        var (rows, cols) = (SimManager.instance.rows,SimManager.instance.cols);
+        List<int> neighbors = new List<int>();
+
+        // Calculate row and column from index
+        int row = index / cols;
+        int col = index % cols;
+
+        // Check neighbors (clamped)
+        // Up
+        if (row > 0) neighbors.Add(index - cols);  // row - 1, same column
+        // Down
+        if (row < rows - 1) neighbors.Add(index + cols);  // row + 1, same column
+        // Left
+        if (col > 0) neighbors.Add(index - 1);  // same row, col - 1
+        // Right
+        if (col < cols - 1) neighbors.Add(index + 1);  // same row, col + 1
+
+        return neighbors;
+    }
+
+    // Get the diagonal (top-left, top-right, bottom-left, bottom-right) neighbors
+    public static List<int> GetDiagonalNeighbors(int index)
+    {
+        var (rows, cols) = (SimManager.instance.rows,SimManager.instance.cols);
+        List<int> neighbors = new List<int>();
+
+        // Calculate row and column from index
+        int row = index / cols;
+        int col = index % cols;
+
+        // Check diagonal neighbors (clamped)
+        // Top-left
+        if (row > 0 && col > 0) neighbors.Add(index - cols - 1);
+        // Top-right
+        if (row > 0 && col < cols - 1) neighbors.Add(index - cols + 1);
+        // Bottom-left
+        if (row < rows - 1 && col > 0) neighbors.Add(index + cols - 1);
+        // Bottom-right
+        if (row < rows - 1 && col < cols - 1) neighbors.Add(index + cols + 1);
+
+        return neighbors;
+    }
+
+    public static (List<Lot>, List<Lot>) GetSurroundingLots(Lot lot) {
+
+        // Method to get the child's index in the parent's hierarchy
+        int GetChildIndexInHierarchy(GameObject child)
+        {
+            // Ensure the child and its parent are valid
+            if (child != null && child.transform.parent != null)
+            {
+                // Return the child's index in the parent's hierarchy
+                return child.transform.GetSiblingIndex();
+            }
+            // Return -1 if there is no valid parent (indicating an error)
+            return -1;
+        }
+
+        // Method to get a child GameObject by sibling index
+        GameObject GetChildByIndexInHierarchy(int index)
+        {
+            var transform = SimManager.instance.lotManager.transform;
+            // Ensure the parent has children
+            if (transform.childCount > 0 && index >= 0 && index < transform.childCount)
+            {
+                // Return the child at the given index
+                Transform childTransform = transform.GetChild(index);
+                return childTransform.gameObject;
+            }
+
+            // Return null if the index is invalid or no children exist
+            return null;
+        }
+
+
+        int idx = GetChildIndexInHierarchy(lot.transform.gameObject);
+        int[] neighborIdx = GetDirectNeighbors(idx).ToArray();
+        int[] adjacentIdx = GetDiagonalNeighbors(idx).ToArray();
+
+        List<Lot> neighborLots = new();
+        List<Lot> adjacentLots = new();
+
+        foreach (int i in neighborIdx) {
+            if (i >= SimManager.instance.lotManager.transform.childCount) Debug.Log(i);
+            neighborLots.Add(GetChildByIndexInHierarchy(i).GetComponent<Lot>());
+        }
+        foreach (int i in adjacentIdx) {
+            adjacentLots.Add(GetChildByIndexInHierarchy(i).GetComponent<Lot>());
+        }
+
+        return (neighborLots, adjacentLots);
+
+    }
 
 
 }

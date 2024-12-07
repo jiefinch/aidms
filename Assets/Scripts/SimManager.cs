@@ -25,7 +25,7 @@ using System.Linq;
 public struct SimParams {
     public int numLots;
     public int numPeople;
-    public List<float> incomeDistribution;
+    public float medianIncome;
     public int timeUnits;
     public LotAttractiveness lotAttractiveness;
     public PlayerSettings playerSettings;
@@ -84,7 +84,7 @@ public class SimManager : MonoBehaviour
     public float dynamicPricingPercent = 0.5f;  // 0: does not factor individual income | 1: max factoring
         // λ: This parameter controls how much the individual's income influences the price. If λ = 1 λ=1, the price is adjusted directly
         // by the percentage difference in income. If λ = 0 λ=0, the income difference has no effect on the price.
-
+    public float dynanmicMaxDiscount = 0.5f; // you will not get more than a 50% discount
     //====================
     [HideInInspector] public static SimManager instance;
     private bool initialized = false;

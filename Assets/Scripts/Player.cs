@@ -10,15 +10,19 @@ public enum SocioClass {
     LOW, MID, HIGH
 }
 
-public struct PlayerHistory {
+public struct PlayerInformation {
     public float income;
+    public float relativeIncome;
+    public float econRank;
+}
+
+public struct PlayerHistory {
     public float expense;
     public float costliness;
     public int attractiveness; // r u housed
     public int numMoves;
     public float qualityGoal;
     public float quality; 
-    public int interestedIn;
 }
 
 public class Player : MonoBehaviour

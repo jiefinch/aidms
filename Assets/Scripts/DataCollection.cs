@@ -24,6 +24,7 @@ public class DataCollection : MonoBehaviour
     public struct RecordedData {
         public SimParams SimParams;
         public List<MarketHistory> MarketHistory;
+        public Dictionary<string, PlayerInformation> PlayerInformation;
         public Dictionary<string, List<PlayerHistory>> PlayerHistories;
         public Dictionary<string, List<LotHistory>> LotHistories;
     }  
@@ -85,6 +86,15 @@ public class DataCollection : MonoBehaviour
         // SaveParameters(Data);
         Data.SimParams = NewDataPoint(SimManager.instance);
 
+        Data.PlayerInformation = new();
+        foreach (Player player in MovingManager.instance.Players.Keys) {
+            PlayerInformation info = new();
+            info.income = player.income;
+            info.relativeIncome = player.income / SimManager.instance.medianIncome;
+            info.econRank = player.econRank;
+            Data.PlayerInformation.Add(player.gameObject.name, info);
+        }
+
         // string outputFilePath = $"{dataPath}/{saveNumber()}.json";
         string fileName = $"{scenario} ({i})";
         string outputFilePath = Path.Combine(dataPath, $"{fileName}.json");
@@ -101,7 +111,7 @@ public class DataCollection : MonoBehaviour
         SimParams output = new();
         output.numLots = point.cols * point.rows;
         output.numPeople = point.numPeople;
-        output.incomeDistribution = point.incomeDistribution;
+        output.medianIncome = point.medianIncome;
         output.timeUnits = numTimeUnits;
         output.dynamicPricingPercent = point.dynamicPricingPercent;
         output.lotAttractiveness = point.lotAttractiveness;
@@ -121,14 +131,13 @@ public class DataCollection : MonoBehaviour
 
     public void NewDataPoint(Player point) {
         PlayerHistory output = new();
-        output.income = point.income;
+        // output.income = point.income;
         output.expense = point.expense;
         output.costliness = point.costliness;
         output.attractiveness = point.currentLot.attractiveness;
         output.numMoves = point.numMoves;
         output.qualityGoal = point.qualityGoal;
         output.quality = point.quality;
-        output.interestedIn = point._InterestedIn.Length;
         Add(point.gameObject.name, output);
     }
     public void NewDataPoint(Lot point) {
