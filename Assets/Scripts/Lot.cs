@@ -51,16 +51,14 @@ public class Lot : MonoBehaviour
         attractiveness = (int)Mathf.Round(colorChanger.R * 20) - 10; // [0,1] => [-10,10]
         attractiveness = Mathf.Clamp(attractiveness, -10, 10);
 
+        (currentPrice, F_income, F_interest) = Calculate.DynamicLotPrice(this); // update dah price
         if (state == LotState.OFF_MARKET) {
-            PotentialBuyers = new();
-            currentPrice = Calculate.DynamicLotPrice(this).Item1; // update dah price
+            // (currentPrice, F_interest) = (Calculate.DynamicLotPrice(this).Item1, 
+            //                             PotentialBuyers.Count/MovingManager.instance.N_0); // update dah price
             // update the expense
             owner.costliness = currentPrice / owner.income;
-
         }
-        if (state == LotState.ON_MARKET) {
-            (currentPrice, F_income, F_interest) = Calculate.DynamicLotPrice(this); // update dah price
-        }
+        
 
 
     }

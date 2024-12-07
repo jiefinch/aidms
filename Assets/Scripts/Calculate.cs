@@ -41,7 +41,11 @@ public class Calculate
         int N = lot.PotentialBuyers.Count(); // num ppl interested
         if (N > 0) {
             float F_interest = N / MovingManager.instance.N_0;
-            float F_income = lot.PotentialBuyers.Average(player => player.income) / median;
+            
+            float F_income = lot.state == LotState.ON_MARKET ? 
+                lot.PotentialBuyers.Average(player => player.income) / median :
+                lot.F_income;
+                
             float dynamicPrice = staticPrice * F_interest * F_income;
 
             // Debug.Log($"dynamic price: {dynamicPrice} | static price: {staticPrice} | int{F_interest} inc{F_income}");

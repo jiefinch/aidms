@@ -152,16 +152,21 @@ public class Player : MonoBehaviour
             MovingManager.instance.AvailableLots.Add(currentLot);
             currentLot.owner = null;
             currentLot.state = LotState.ON_MARKET;
+            currentLot.PotentialBuyers = new();
         }
 
-        // no longer an option for other people
+        var N = lot.PotentialBuyers.Count; // num ppl who were interested in this lot
+        // no longer interested in other lots
         foreach(Player player in lot.PotentialBuyers.ToArray()) {
             player.InterestedIn.Remove(lot);
         }
+        // no longer a potential buyer of other lots
+        foreach(Lot l in InterestedIn.Keys.ToArray()) {
+            l.PotentialBuyers.Remove(this);
+        }
         
         InterestedIn = new();
-        lot.PotentialBuyers = new();
-
+        lot.PotentialBuyers = Enumerable.Repeat<Player>(null, N).ToList();  // save the null state
 
         currentLot = lot;
         lot.owner = this;
@@ -171,10 +176,7 @@ public class Player : MonoBehaviour
         if (quality > qualityGoal) {
             qualityGoal = quality; // improve ur quality standards to match this house
         }
-        // remove self from all the housese u were interested in
-        foreach(Lot l in InterestedIn.Keys.ToArray()) {
-            l.PotentialBuyers.Remove(this);
-        }
+        
 
         numMoves++;    
         UpdatePosition();

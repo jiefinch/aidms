@@ -92,6 +92,7 @@ public class DataCollection : MonoBehaviour
         // convert and save
         string json = JsonConvert.SerializeObject(Data, Formatting.Indented);
         System.IO.File.WriteAllText(outputFilePath, json);
+        Debug.Log($"file saved at {outputFilePath}");
     }
 
     // ========================= ADD POINT FUNCTIONS ============================
@@ -162,23 +163,8 @@ public class DataCollection : MonoBehaviour
     int NextFileNumber() {
         string[] existingFiles = Directory.GetFiles(dataPath, $"{scenario}*.json");
         // Determine the next available number
-        int nextNumber = 0; // minimum number
-        if (existingFiles.Length > 0)
-        {
-            // Extract numbers from existing file names and find the maximum
-            var numbers = existingFiles.Select(file =>
-            {
-                string fileName = Path.GetFileNameWithoutExtension(file);
-                int number;
-                if (int.TryParse(fileName, out number))
-                {
-                    return number;
-                }
-                return 0;
-            });
-            nextNumber = numbers.Max() + 1;
-        }
-        return nextNumber;
+        int nextNumber = 1; // minimum number
+        return existingFiles.Length + nextNumber;
     }
 
 }

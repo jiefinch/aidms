@@ -620,7 +620,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lotManager: {fileID: 1167864541}
   rows: 10
-  cols: 12
+  cols: 15
   lot: {fileID: 8759755288784404981, guid: 1cb55a328b96a1247950c2b9bf1192da, type: 3}
   spacing: 2.1
   lotSize: 2
@@ -640,7 +640,7 @@ MonoBehaviour:
   lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
-  secsPerUnit: 0.5
+  secsPerUnit: 0.25
   displayText: {fileID: 112779449}
   nextStep:
     m_PersistentCalls:
@@ -654,13 +654,13 @@ MonoBehaviour:
     prob:
     - 1
     gentrification: 0.25
-    decay: 0.5
+    decay: 0.25
   playerSettings:
     initInterestDropChance: 0.01
     interestDeterioration: 0.3
     initQualityGoalDrop: 0.01
     qualityGoalDeterioration: 0.3
-  dynamicPricingPercent: 0
+  dynamicPricingPercent: 1
 --- !u!114 &1351003866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -694,9 +694,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 817cbb1ee5970b947923b60c460557d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveData: 0
-  scenario: test
-  numTimeUnits: 10
+  saveData: 1
+  scenario: dynamic
+  numTimeUnits: 100
 --- !u!1 &1464171917
 GameObject:
   m_ObjectHideFlags: 0
