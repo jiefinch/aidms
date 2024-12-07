@@ -360,7 +360,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 10.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -385,7 +385,7 @@ Transform:
   m_GameObject: {fileID: 1258817380}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -620,7 +620,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lotManager: {fileID: 1167864541}
   rows: 10
-  cols: 15
+  cols: 12
   lot: {fileID: 8759755288784404981, guid: 1cb55a328b96a1247950c2b9bf1192da, type: 3}
   spacing: 2.1
   lotSize: 2
@@ -640,7 +640,7 @@ MonoBehaviour:
   lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
-  secsPerUnit: 1
+  secsPerUnit: 0.5
   displayText: {fileID: 112779449}
   nextStep:
     m_PersistentCalls:
@@ -653,14 +653,14 @@ MonoBehaviour:
     - 3
     prob:
     - 1
-    gentrification: 0.5
+    gentrification: 0.25
     decay: 0.5
   playerSettings:
     initInterestDropChance: 0.01
     interestDeterioration: 0.3
     initQualityGoalDrop: 0.01
     qualityGoalDeterioration: 0.3
-  dynamicPricingPercent: 1
+  dynamicPricingPercent: 0
 --- !u!114 &1351003866
 MonoBehaviour:
   m_ObjectHideFlags: 0

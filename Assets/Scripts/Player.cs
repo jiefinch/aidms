@@ -61,6 +61,7 @@ public class Player : MonoBehaviour
     void UpdatePlayer() 
     {
         ConsiderMoving();
+        (costliness, quality) =  Calculate.LotStats(currentLot, this);
     }
 
     public void UpdatePosition() {
@@ -137,7 +138,7 @@ public class Player : MonoBehaviour
                 lot.PotentialBuyers.Add(this); 
             }
         }
-        if (qualityGoal>-1f) qualityGoal = Mathf.Clamp(qualityGoal-Calculate.DropInQualityGoal(this), -1, 1);
+        if (qualityGoal>-1f) qualityGoal = Mathf.Clamp(qualityGoal-Calculate.DropInQualityGoal(this), quality, 1);
     }
 
 

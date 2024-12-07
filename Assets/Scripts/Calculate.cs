@@ -127,9 +127,9 @@ public class Calculate
     public static float QualityOfLot(Lot lot, Player player) {
         // cost quality [-1, 1] : W * costliness mapped to [-1,1]
         // attractive quality [-1, 1] : W * lot.attractiveness/10f;
-
+        if (lot.attractiveness == -10) return -2f; // the most unnatractive state to be in
         float costliness = DynamicLotPrice(lot).Item1 / player.income; // [0,1]
-        if (costliness > 1) return -2; // cant even afford it bro || -2
+        if (costliness > 1) return -1.5f; // cant even afford it bro || -2
         float goodPrice = 1 - costliness;  // [0,1] >> reverse it so 1 = good
 
         float costScore =  2 * goodPrice - 1;  // Shift to [-1, 1] range
