@@ -11,6 +11,7 @@ public struct MarketHistory {
     public float medianHousePrice;
     public float averageOwnedHousePrice;
     public float medianOwnedHousePrice;
+    public float N_0;
 }
 
 public class MovingManager : MonoBehaviour

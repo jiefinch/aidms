@@ -114,6 +114,7 @@ public class DataCollection : MonoBehaviour
         output.medianHousePrice = point.medianHousePrice;
         output.averageOwnedHousePrice = point.averageOwnedHousePrice;
         output.medianOwnedHousePrice = point.medianOwnedHousePrice;
+        output.N_0 = point.N_0;
         Add(output);
     }
 
