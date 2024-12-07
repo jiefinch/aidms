@@ -7,13 +7,30 @@ using UnityEngine.Events;
 using UnityEditor;
 using System.Linq;
 
-// public struct SimParams {
-//     public int numLots;
-//     public int numPeople;
-//     public List<float> incomeDistribution;
-//     public int timeUnits;
-//     public float dynamicPricingPercent;
-// }
+[Serializable] public struct LotAttractiveness {
+    public float[] means;
+    public float[] stdDevs;
+    public float[] prob;
+    public float gentrification; // = 0.25f;
+    public float decay; // = 0.1f;
+}
+[Serializable] public struct PlayerSettings 
+{
+    public float initInterestDropChance; // = 0.01f; // initial P(dropping)
+    public float interestDeterioration; // 0.5f; || INFORMAL NAME: IMPATIENCE || longer u've looked at, the more likely to drop it || compounding on P(dropping)
+    public float initQualityGoalDrop; // = 0.01f; // initial qualitydrop
+    public float qualityGoalDeterioration; // = 0.1f; || INFORMAL NAME: IMPATIENCE || longer u wanted to move for, reduce your standards for a house || exponential
+}
+
+public struct SimParams {
+    public int numLots;
+    public int numPeople;
+    public List<float> incomeDistribution;
+    public int timeUnits;
+    public LotAttractiveness lotAttractiveness;
+    public PlayerSettings playerSettings;
+    public float dynamicPricingPercent;
+}
 
 public class SimManager : MonoBehaviour
 {
@@ -45,9 +62,6 @@ public class SimManager : MonoBehaviour
     }
     public PercentsOwned percentsOwned;
 
-    // public float percentLowOwn = 0.13f;
-    // public float percentMidOwn = 0.6f;
-    // public float percentHighOwn = 0.27f;
     public float highestIncome = 0f;
     public float medianIncome = 0f;
     public float lowestIncome = 0f;
@@ -64,18 +78,9 @@ public class SimManager : MonoBehaviour
 
 
     [Header("MATH")]
-    // 𝑅 = chance of buying
-    
     public bool controlAttractiveness = true;
-    public float[] means;
-    public float[] stdDevs;
-    public float[] prob;
-
-    public float initInterestDropChance = 0.01f; // initial P(dropping)
-    public float interestDeterioration = 0.5f; // longer u've looked at, the more likely to drop it || compounding on P(dropping)
-    public float qualityGoalDeterioration = 0.1f; // longer u wanted to move for, reduce your standards for a house || linear
-    public float lotDeteriorationAmount = 0.25f;
-
+    public LotAttractiveness lotAttractiveness;
+    public PlayerSettings playerSettings;
     public float dynamicPricingPercent = 0.5f;  // 0: does not factor individual income | 1: max factoring
         // λ: This parameter controls how much the individual's income influences the price. If λ = 1 λ=1, the price is adjusted directly
         // by the percentage difference in income. If λ = 0 λ=0, the income difference has no effect on the price.
@@ -102,7 +107,7 @@ public class SimManager : MonoBehaviour
     {
         numPeople = numLow + numHigh + numMid;
         Debug.Assert(numPeople <= cols*rows, $"NOT ENOUGH LOTS. #PEOPLE: {numPeople}, #LOTS{cols*rows}");
-        if (!DataCollection.instance.saveData) InitializeSimulation();
+        InitializeSimulation();
     }
 
     // Update is called once per frame
@@ -158,7 +163,7 @@ public class SimManager : MonoBehaviour
         }
 
         int num = MovingManager.instance.Lots.Count;
-        int[] a = MyUtils.GuassedRandom(num, means, stdDevs, prob);
+        int[] a = MyUtils.GuassedRandom(num, lotAttractiveness.means, lotAttractiveness.stdDevs, lotAttractiveness.prob);
         
         for (int i = 0; i < num; i++) {
             var item = MovingManager.instance.Lots.ElementAt(i);

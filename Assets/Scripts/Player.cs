@@ -32,6 +32,7 @@ public class Player : MonoBehaviour
 
     [Header("HISTORY")]
     public int numMoves;
+    public int attemptsToMove;
 
 
     [Header("GAME")]
@@ -47,7 +48,9 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (DataCollection.instance.saveData) SimManager.instance.nextStep.AddListener(SaveDataPoint);
         SimManager.instance.nextStep.AddListener(UpdatePlayer);
+        // SimManager.instance.nextStep.AddListener(SaveDataPoint);
     }
 
     void Update() {
@@ -106,6 +109,7 @@ public class Player : MonoBehaviour
 
     void Wait()
     {
+        attemptsToMove++;
         // PLAYER POV
         // remove interest chances
         // 1. interested in
@@ -133,11 +137,12 @@ public class Player : MonoBehaviour
                 lot.PotentialBuyers.Add(this); 
             }
         }
-        if (qualityGoal>-1f) qualityGoal-=SimManager.instance.qualityGoalDeterioration;
+        if (qualityGoal>-1f) qualityGoal = Mathf.Clamp(qualityGoal-Calculate.DropInQualityGoal(this), -1, 1);
     }
 
 
     public void MoveToLot(Lot lot) {
+        attemptsToMove = 0;
         // put in dah new guys
         MovingManager.instance.Lots[lot] = this;
         MovingManager.instance.Players[this] = lot;
@@ -175,6 +180,8 @@ public class Player : MonoBehaviour
     }
 
     // ========================= DATA SAVING ============================
-
+    public void SaveDataPoint() {
+        DataCollection.instance.NewDataPoint(this);
+    }
 
 }

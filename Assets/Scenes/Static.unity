@@ -579,9 +579,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1351003864}
+  - component: {fileID: 1351003867}
   - component: {fileID: 1351003865}
   - component: {fileID: 1351003866}
-  - component: {fileID: 1351003867}
   m_Layer: 0
   m_Name: Simulation Manager
   m_TagString: Untagged
@@ -640,28 +640,29 @@ MonoBehaviour:
   lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
-  secsPerUnit: 0.5
+  secsPerUnit: 1
   displayText: {fileID: 112779449}
   nextStep:
     m_PersistentCalls:
       m_Calls: []
   controlAttractiveness: 1
-  means:
-  - -10
-  - 0
-  - 5
-  stdDevs:
-  - 2
-  - 0
-  - 2
-  prob:
-  - 0.8
-  - 0
-  - 0.2
-  initInterestDropChance: 0.01
-  interestDeterioration: 0.5
-  qualityGoalDeterioration: 0.1
-  lotDeteriorationAmount: 0
+  lotAttractiveness:
+    means:
+    - 0
+    - 5
+    stdDevs:
+    - 2
+    - 2
+    prob:
+    - 0.8
+    - 0.2
+    gentrification: 0.5
+    decay: 0.5
+  playerSettings:
+    initInterestDropChance: 0.01
+    interestDeterioration: 0.3
+    initQualityGoalDrop: 0.01
+    qualityGoalDeterioration: 0.3
   dynamicPricingPercent: 0
 --- !u!114 &1351003866
 MonoBehaviour:
@@ -696,11 +697,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 817cbb1ee5970b947923b60c460557d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveData: 0
+  saveData: 1
   scenario: test
-  numSims: 2
-  currSim: 0
-  simRunning: 0
   numTimeUnits: 10
 --- !u!1 &1464171917
 GameObject:

@@ -61,11 +61,11 @@ public class Calculate
         float randValue = UnityEngine.Random.value;
 
         if (randValue < pGentrify) {
-            return SimManager.instance.lotDeteriorationAmount;
+            return SimManager.instance.lotAttractiveness.gentrification;
         } else if (randValue < pNoChange) {
             return 0;
         } else {
-            return -SimManager.instance.lotDeteriorationAmount;
+            return -SimManager.instance.lotAttractiveness.decay;
         }
     }
 
@@ -105,10 +105,19 @@ public class Calculate
         return (P_NoChange, P_Gentrify);
     }
 
+    // exponential
     public static float ChanceOfDropping(Dictionary<Lot, int> InterestedIn, Lot lot) {
-        float i = SimManager.instance.initInterestDropChance; // initial
-        double r = 1 + SimManager.instance.interestDeterioration; // ratio of exp. increase
+        float i = SimManager.instance.playerSettings.initInterestDropChance; // initial
+        double r = 1 + SimManager.instance.playerSettings.interestDeterioration; // ratio of exp. increase
         double x = InterestedIn[lot];
+        return i * (float)Math.Pow(r,x);
+    }
+
+    // exponential
+    public static float DropInQualityGoal(Player player) {
+        float i = SimManager.instance.playerSettings.initQualityGoalDrop; // initial
+        double r = 1 + SimManager.instance.playerSettings.qualityGoalDeterioration; // ratio of exp. increase
+        double x = player.attemptsToMove;
         return i * (float)Math.Pow(r,x);
     }
 
@@ -138,7 +147,6 @@ public class Calculate
         float quality = QualityOfLot(lot, player);
         return (costliness, quality);
     }
-
 
     public static (float, float) LotSatisfaction(Player player)
     {

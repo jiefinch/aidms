@@ -142,21 +142,20 @@ public static class MyUtils {
     // min and max [-10,10] hardcoded for usecase in attractiveness
     public static int[] GuassedRandom(int num, float[] means, float[] stdDevs, float[] prob) {
         // float randValue = UnityEngine.Random.value;
-        // i trust u to be all 3
+        if (prob.Sum() != 1) Debug.LogError($"Sum of probabilities for GuassedRandom != 1. {prob.Sum()}");
 
         List<int> randoms = new();
         float bit = (float)1/num;
         float counter = 0;
         int i = 0;
+        float probCounter = prob[i];
+        
         for (int n = 0; n < num; n++) {
-            if (counter < prob[0]) {
-                i = 0;
-            } else if (counter < prob[0] + prob[1]) {
-                i = 1;
-            } else {
-                // prob[0] + prob[1] + prob[2] should be 1
-                i = 2;
-            }
+            if (counter >= probCounter) {
+                i++;
+                probCounter += prob[i];
+            } 
+            
             var (mean, stdDev) = (means[i], stdDevs[i]);
             float guass = GaussianRandomValue(mean, stdDev);
             int a = (int)Mathf.Clamp(Mathf.Round(guass), -10, 10);

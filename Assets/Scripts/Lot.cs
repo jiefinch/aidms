@@ -38,6 +38,7 @@ public class Lot : MonoBehaviour
     void Start()
     {
         colorChanger = GetComponent<ColorChanger>();
+        if (DataCollection.instance.saveData) SimManager.instance.nextStep.AddListener(SaveDataPoint);
         SimManager.instance.nextStep.AddListener(UpdateLot);
     }
 
@@ -45,7 +46,7 @@ public class Lot : MonoBehaviour
     {
 
         // deteriorate vs no change vs gentrify
-        colorChanger.R += Calculate.ChangeInLot(this)/20;
+        colorChanger.R += Calculate.ChangeInLot(this)/20f; // whewf.. got it here
         colorChanger.R = Mathf.Clamp(colorChanger.R, 0, 1);
         attractiveness = (int)Mathf.Round(colorChanger.R * 20) - 10; // [0,1] => [-10,10]
         attractiveness = Mathf.Clamp(attractiveness, -10, 10);
@@ -66,10 +67,8 @@ public class Lot : MonoBehaviour
 
     // ========================= DATA SAVING ============================
 
-    // SimManager.instance.nextStep.AddListener(SaveDataPoint);
-    // public void SaveDataPoint() {
-    //     MovingHistory history = NewDataPoint(MovingManager.instance);
-    //     Add(history);
-    // }
+    public void SaveDataPoint() {
+        DataCollection.instance.NewDataPoint(this);
+    }
 
 }

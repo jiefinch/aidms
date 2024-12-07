@@ -5,7 +5,7 @@ using System.Linq;
 using System;
 using UnityEngine.Events;
 
-public struct MovingHistory {
+public struct MarketHistory {
     public float moneyInHousingMarket;
     public float averageHousePrice;
     public float medianHousePrice;
@@ -55,6 +55,7 @@ public class MovingManager : MonoBehaviour
 
     void Start() {
         SimManager.instance.nextStep.AddListener(UpdateLots);
+        if (DataCollection.instance.saveData) SimManager.instance.nextStep.AddListener(SaveDataPoint);
     }
 
     void Update() 
@@ -128,11 +129,8 @@ public class MovingManager : MonoBehaviour
     }
 
     // ========================= DATA SAVING ============================
-
-    // SimManager.instance.nextStep.AddListener(SaveDataPoint);
-    // public void SaveDataPoint() {
-    //     MovingHistory history = NewDataPoint(MovingManager.instance);
-    //     Add(history);
-    // }
+    public void SaveDataPoint() {
+        DataCollection.instance.NewDataPoint(this);
+    }
 
 }
