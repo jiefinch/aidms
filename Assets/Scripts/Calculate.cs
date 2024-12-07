@@ -20,16 +20,12 @@ public class Calculate
     public static float StaticLotPrice(Lot lot)
     {
         // Normalize attractiveness ([-10, 10] to [0, 2]) : F(A)
-        float attractivenessMultiplier = (float)(lot.attractiveness+10f)/10f;
-
-        // see below for G(I): median income
-        var incomeDistribution = SimManager.instance.incomeDistribution.ToArray();
-        float incomeMultiplier = IncomeManagement.CalculateIncomeMultiplier(incomeDistribution);
+        float x = lot.attractiveness;
+        float attractivenessMultiplier = (float) (2 / (1+(float)Math.Exp(-0.25f*x)));
+        var basePrice = SimManager.instance.medianIncome * 0.75f;
 
         // Calculate price
-        float price = attractivenessMultiplier * incomeMultiplier;
-
-        // Debug.Log($"static price: {price} | A{lot.attractiveness} Inc{incomeMultiplier}");
+        float price = basePrice * attractivenessMultiplier;
         return price;
     }
 
