@@ -57,7 +57,7 @@ public class DataCollection : MonoBehaviour
 
     void Update() {
 
-        if (numTimeUnits <= SimManager.instance.timeUnit) {
+        if (numTimeUnits <= SimManager.instance.timeUnit && saveData) {
             EndSimulation(NextFileNumber(), Data);
         }
     }
