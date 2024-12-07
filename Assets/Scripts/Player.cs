@@ -116,8 +116,8 @@ public class Player : MonoBehaviour
         // 1. interested in
         // 2. potential buyers
         int num = _InterestedIn.Length;
-        float randValue = UnityEngine.Random.value;
-        Lot[] lotsToRemove = InterestedIn.Where(item => randValue < Calculate.ChanceOfDropping(InterestedIn, item.Key)).
+        // float randValue = UnityEngine.Random.value; => generate new random value per
+        Lot[] lotsToRemove = InterestedIn.Where(item => UnityEngine.Random.value < Calculate.ChanceOfDropping(InterestedIn, item.Key)).
                 Select(item => item.Key)
                 .ToArray();
 
