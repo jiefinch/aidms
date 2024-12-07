@@ -660,7 +660,7 @@ MonoBehaviour:
     interestDeterioration: 0.3
     initQualityGoalDrop: 0.01
     qualityGoalDeterioration: 0.3
-  dynamicPricingPercent: 1
+  dynamicPricingPercent: 0.5
 --- !u!114 &1351003866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -695,7 +695,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   saveData: 1
-  scenario: dynamic
+  scenario: mixed
   numTimeUnits: 100
 --- !u!1 &1464171917
 GameObject:

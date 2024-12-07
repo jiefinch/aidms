@@ -50,6 +50,7 @@ public class Calculate
 
             // Debug.Log($"dynamic price: {dynamicPrice} | static price: {staticPrice} | int{F_interest} inc{F_income}");
             dynamicPrice = (1-sigma)*staticPrice + sigma*dynamicPrice;
+            dynamicPrice = dynamicPrice < staticPrice*0.5 ? staticPrice : dynamicPrice;
             return (dynamicPrice, F_income, F_interest);
         }
         return (staticPrice, 1f, 1f);
