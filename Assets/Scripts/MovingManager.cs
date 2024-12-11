@@ -12,6 +12,7 @@ public struct MarketHistory {
     public float averageOwnedHousePrice;
     public float medianOwnedHousePrice;
     public float N_0;
+    public int N_homeless;
 }
 
 public class MovingManager : MonoBehaviour
@@ -35,6 +36,7 @@ public class MovingManager : MonoBehaviour
     public float averageOwnedHousePrice; // average price of owned houses across the board
 
     public float N_0; // # movers / # avail lots ==> average lot interest
+    public int N_homeless;
     public bool takeOut0s = true;
 
     public int toConsider = 3;
@@ -67,7 +69,12 @@ public class MovingManager : MonoBehaviour
 
     void UpdateLots() {
         // add wait in here
-        (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice, averageHousePrice, medianHousePrice) = HousingMarket();
+        (moneyInHousingMarket,
+            averageOwnedHousePrice,
+            medianOwnedHousePrice, 
+            averageHousePrice, 
+            medianHousePrice,
+            N_homeless) = HousingMarket();
         N_0 = BaselineInterest();
     }
 
@@ -78,8 +85,9 @@ public class MovingManager : MonoBehaviour
 
     // ========================================== MATH ==========================================
 
-    (float, float, float, float, float) HousingMarket() 
+    (float, float, float, float, float, int) HousingMarket() 
     {
+        int N_homeless = 0;
 
         Dictionary<bool, List<float>> prices = new()
         {
@@ -87,13 +95,26 @@ public class MovingManager : MonoBehaviour
             { false, new List<float>() }
         };
 
-        foreach ((Lot lot, Player owner) in Lots) {
-            bool avail = owner == null;
-            if (lot.attractiveness != 0) {
-                // this isn't even a house, it's a homeless spot
+
+        for (int i = 0; i < Lots.Count; i++) {
+            var item = Lots.ElementAt(i);
+            Lot lot = item.Key;
+            if (lot.owner == null) Lots[lot] = null;
+            bool avail = lot.owner == null;
+            if (lot.attractiveness != 0) { // if its not a homeless spot
                 prices[avail].Add(lot.currentPrice);
-            }            
+            }
+            if (lot.attractiveness == -10 && lot.owner != null) N_homeless++;
         }
+
+        // foreach ((Lot lot, Player owner) in Lots) {
+        //     if (lot.owner == null) Lots[lot] = null;
+        //     bool avail = owner == null;
+        //     if (lot.attractiveness != 0) { // if its not a homeless spot
+        //         prices[avail].Add(lot.currentPrice);
+        //     }
+        //     if (lot.attractiveness == -10 && lot.owner != null) N_homeless++;
+        // }
 
         List<float> combinedList = new List<float>(prices[true]);
         combinedList.AddRange(prices[false]);
@@ -107,7 +128,12 @@ public class MovingManager : MonoBehaviour
         float averageHousePrice = combinedList.Average() / SimManager.instance.medianIncome;
         float averageOwnedHousePrice = prices[false].Average() / SimManager.instance.medianIncome;
 
-        return (moneyInHousingMarket, averageOwnedHousePrice, medianOwnedHousePrice, averageHousePrice, medianHousePrice);
+        return (moneyInHousingMarket,
+                averageOwnedHousePrice,
+                medianOwnedHousePrice, 
+                averageHousePrice, 
+                medianHousePrice,
+                N_homeless);
 
 
     }

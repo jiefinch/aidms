@@ -11,7 +11,6 @@ using Unity.VisualScripting;
 
 public class DataCollection : MonoBehaviour
 {
-
     public bool saveData;
     public string scenario;
     public int numTimeUnits;
@@ -58,8 +57,10 @@ public class DataCollection : MonoBehaviour
 
     void Update() {
 
-        if (numTimeUnits <= SimManager.instance.timeUnit && saveData) {
-            EndSimulation(NextFileNumber(), Data);
+        if (saveData) {
+            if (SimManager.instance.timeUnit >= numTimeUnits) {
+                EndSimulation(NextFileNumber(), Data);
+            }
         }
     }
 
@@ -111,11 +112,12 @@ public class DataCollection : MonoBehaviour
         SimParams output = new();
         output.numLots = point.cols * point.rows;
         output.numPeople = point.numPeople;
+        output.incomeDistribution = point.incomeDistribution;
         output.medianIncome = point.medianIncome;
         output.timeUnits = numTimeUnits;
-        output.dynamicPricingPercent = point.dynamicPricingPercent;
         output.lotAttractiveness = point.lotAttractiveness;
         output.playerSettings = point.playerSettings;
+        output.dynamicPricingPercents = point.dynamicPricingPercents;
         return output;
     }
     public void NewDataPoint(MovingManager point) {
@@ -126,6 +128,7 @@ public class DataCollection : MonoBehaviour
         output.averageOwnedHousePrice = point.averageOwnedHousePrice;
         output.medianOwnedHousePrice = point.medianOwnedHousePrice;
         output.N_0 = point.N_0;
+        output.N_homeless = point.N_homeless;
         Add(output);
     }
 

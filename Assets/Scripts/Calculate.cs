@@ -74,7 +74,10 @@ public class Calculate
 
     // ================================================================================================
 
-    public static float ChanceOfBuying(float quality, float qualityGoal) {
+    public static float ChanceOfBuying(float currQuality, float quality, float qualityGoal, float costiness) {
+        // also need to check costpliness
+        if (currQuality == -2 && costiness > 1) return 0; // i'm homeless, i cant afford this rental
+
         float d = Math.Abs(quality-qualityGoal);
 
         if (quality >= qualityGoal) {
@@ -89,9 +92,11 @@ public class Calculate
 
     public static float ChanceOfMoving(Player player) 
     {
-        if (player.costliness > 1f) {
+        // special case: u cant afford. hell yeah u wanna get out LOL
+        // of if you're homeless, you really want to be not homeless
+        if (player.costliness > 1f || player.quality == -2f) {
             return 1f;
-        } // special case: u cant afford. hell yeah u wanna get out LOL
+        } 
 
         var (S_a, S_c) = LotSatisfaction(player);
         // chance of movign out: how satisfied w/ attraction you are * how much do u care abt attractiveness
@@ -196,7 +201,8 @@ public class IncomeManagement // G(i)
     public static (float, float) Weights(Player player) {
 
         float econStanding = player.income/SimManager.instance.medianIncome;
-        float WeightCost = 1/(1 + (float)Math.Exp(Calculate.kappa * (player.income-SimManager.instance.medianIncome)));
+        float WeightCost = 1/(1 + (float)Math.Exp(Calculate.kappa * (player.income-SimManager.instance.medianIncome)/SimManager.instance.medianIncome));
+        // float WeightCost = 1/(1 + (float)Math.Exp(5f * player.econRank));
         float WeightAttr = 1 - WeightCost;
 
         // Debug.Log($"{player.socioClass} diff{player.income-SimManager.instance.medianIncome} |wcost{WeightCost} wattr{WeightAttr}");

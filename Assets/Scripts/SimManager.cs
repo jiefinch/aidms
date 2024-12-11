@@ -7,6 +7,21 @@ using UnityEngine.Events;
 using UnityEditor;
 using System.Linq;
 
+public struct SimParams {
+    public int numLots;
+    public int numPeople;
+    public List<float> incomeDistribution;
+    public float medianIncome;
+    public int timeUnits;
+    public LotAttractiveness lotAttractiveness;
+    public PlayerSettings playerSettings;
+    public DynamicPricingPercents dynamicPricingPercents;
+}
+
+[Serializable] public struct DynamicPricingPercents {
+    public int[] times;
+    public float[] percents;
+}
 [Serializable] public struct LotAttractiveness {
     public float[] means;
     public float[] stdDevs;
@@ -20,16 +35,6 @@ using System.Linq;
     public float interestDeterioration; // 0.5f; || INFORMAL NAME: IMPATIENCE || longer u've looked at, the more likely to drop it || compounding on P(dropping)
     public float initQualityGoalDrop; // = 0.01f; // initial qualitydrop
     public float qualityGoalDeterioration; // = 0.1f; || INFORMAL NAME: IMPATIENCE || longer u wanted to move for, reduce your standards for a house || exponential
-}
-
-public struct SimParams {
-    public int numLots;
-    public int numPeople;
-    public float medianIncome;
-    public int timeUnits;
-    public LotAttractiveness lotAttractiveness;
-    public PlayerSettings playerSettings;
-    public float dynamicPricingPercent;
 }
 
 public class SimManager : MonoBehaviour
@@ -72,6 +77,7 @@ public class SimManager : MonoBehaviour
     public float secsPerUnit;
     public TMP_Text displayText;
     private float timer;
+    private int i = -1;
     DateTime startTime;
     public UnityEvent nextStep;
     // public UnityEvent simulationEnd;
@@ -81,6 +87,7 @@ public class SimManager : MonoBehaviour
     public bool controlAttractiveness = true;
     public LotAttractiveness lotAttractiveness;
     public PlayerSettings playerSettings;
+    public DynamicPricingPercents dynamicPricingPercents;
     public float dynamicPricingPercent = 0.5f;  // 0: does not factor individual income | 1: max factoring
         // λ: This parameter controls how much the individual's income influences the price. If λ = 1 λ=1, the price is adjusted directly
         // by the percentage difference in income. If λ = 0 λ=0, the income difference has no effect on the price.
@@ -115,11 +122,18 @@ public class SimManager : MonoBehaviour
     {
         if (initialized) {
             timer += Time.deltaTime;
+            if (i < dynamicPricingPercents.times.Length-1 && timeUnit == dynamicPricingPercents.times[i+1]) {
+                i++;
+                dynamicPricingPercent = dynamicPricingPercents.percents[i];
+            }
+            
             if (timer >= secsPerUnit) {
                 timer = 0;
                 nextStep.Invoke();
                 timeUnit++;
             }   
+
+
 
             displayText.text =  $"Time Unit: {timeUnit}" + 
                             $"\nTime Elapsed: {(DateTime.Now - startTime).ToString("hh\\:mm\\:ss\\.fff")}" +
@@ -221,6 +235,7 @@ public class SimManager : MonoBehaviour
             // float color = (player.econRank+1f)/2f; // chance [-1,1] => [0,1]
             float color = player.income / (medianIncome*2f); // more than double median income = higher.. 
             player.GetComponent<ColorChanger>().R = color;
+            player.overSpent = UnityEngine.Random.Range(0,12); // randome history of over spending [0,11] [12]
 
             player.UpdatePosition();
 

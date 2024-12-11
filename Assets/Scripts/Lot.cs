@@ -48,29 +48,33 @@ public class Lot : MonoBehaviour
 
     void UpdateLot() 
     {
+        if (owner != null && owner.overSpent >= 12) {
+            // become homeless lot yahoo
+            colorChanger.R = 0;
+            attractiveness = -10;
+            owner.quality = -2f;
+        } else if (owner == null || owner.quality > -2f) { // change lot quality if owner is not homeless
+            // deteriorate vs no change vs gentrify
+            float changeInLot = Calculate.ChangeInLot(this)/20f;
+            ChangeAttractiveness(changeInLot);
 
-        // deteriorate vs no change vs gentrify
-        float changeInLot = Calculate.ChangeInLot(this)/20f;
-        ChangeAttractiveness(changeInLot);
-
-        // if u gentrified, gentrify the neighbors
-        if (changeInLot > 0) {
-            var (neighborLots, adjacentLots) = MyUtils.GetSurroundingLots(this);
-            foreach(Lot lot in neighborLots) {
-                float change = changeInLot/2;
-                lot.ChangeAttractiveness(change);
-            }
-            foreach(Lot lot in adjacentLots) {
-                float change = changeInLot/4;
-                lot.ChangeAttractiveness(change);            
+            // if u gentrified, gentrify the neighbors
+            if (changeInLot > 0) {
+                var (neighborLots, adjacentLots) = MyUtils.GetSurroundingLots(this);
+                foreach(Lot lot in neighborLots) {
+                    float change = changeInLot/2;
+                    lot.ChangeAttractiveness(change);
+                }
+                foreach(Lot lot in adjacentLots) {
+                    float change = changeInLot/4;
+                    lot.ChangeAttractiveness(change);            
+                }
             }
         }
 
         (currentPrice, F_income, F_interest) = Calculate.DynamicLotPrice(this); // update dah price
         if (state == LotState.OFF_MARKET) {
-            // (currentPrice, F_interest) = (Calculate.DynamicLotPrice(this).Item1, 
-            //                             PotentialBuyers.Count/MovingManager.instance.N_0); // update dah price
-            // update the expense
+            // update the expense of the owner
             owner.costliness = currentPrice / owner.income;
         }
     }

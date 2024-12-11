@@ -37,6 +37,7 @@ public class Player : MonoBehaviour
     [Header("HISTORY")]
     public int numMoves;
     public int attemptsToMove;
+    public int overSpent;
 
 
     [Header("GAME")]
@@ -46,8 +47,8 @@ public class Player : MonoBehaviour
     public float quality; // attractiveness : costliness => want to maximize [0/[0-1] : 20/[0:1]]
     public Dictionary<Lot, int> InterestedIn = new();
     public Lot[] _InterestedIn; // list of lots
-    [HideInInspector] public float WeightCost = 0f;
-    [HideInInspector] public float WeightAttr = 0f;
+    public float WeightCost = 0f;
+    public float WeightAttr = 0f;
 
     // Start is called before the first frame update
     void Start()
@@ -64,6 +65,9 @@ public class Player : MonoBehaviour
 
     void UpdatePlayer() 
     {
+        if (costliness > 1) overSpent++;
+        if (costliness <= 0.75 && quality > -2) overSpent = overSpent-1<0? 0 : overSpent-1; // pay back ur debt if youre not homeless
+
         ConsiderMoving();
         (costliness, quality) =  Calculate.LotStats(currentLot, this);
     }
@@ -92,8 +96,9 @@ public class Player : MonoBehaviour
         // highest chance to buy lot
         if (_InterestedIn.Length > 0) {
             foreach (Lot l in InterestedIn.Keys.ToArray()) {
-                float Q = Calculate.QualityOfLot(l, this);
-                float chance = Calculate.ChanceOfBuying(Q, qualityGoal);
+                float lotQuality = Calculate.QualityOfLot(l, this);
+                float costli = l.currentPrice / income;
+                float chance = Calculate.ChanceOfBuying(quality, lotQuality, qualityGoal, costli);
                 if (chance > _prevChance && chance > randValue) {
                     buyLot = l;
                     _prevChance = chance;
@@ -148,6 +153,8 @@ public class Player : MonoBehaviour
 
     public void MoveToLot(Lot lot) {
         attemptsToMove = 0;
+        if (lot.currentPrice / income<= 0.75) overSpent = overSpent-1<0? 0 : overSpent-1;
+
         // put in dah new guys
         MovingManager.instance.Lots[lot] = this;
         MovingManager.instance.Players[this] = lot;

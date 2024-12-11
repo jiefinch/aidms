@@ -619,21 +619,21 @@ MonoBehaviour:
   lotSize: 2
   playerManager: {fileID: 1293873606}
   numLow: 50
-  numMid: 40
-  numHigh: 10
+  numMid: 49
+  numHigh: 1
   numPeople: 0
   player: {fileID: 5208202849121193467, guid: c9053dd8619ee814980ddf51040e5230, type: 3}
   MoneyInCirculation: 100000
   percentsOwned:
-    Low: 0.05
-    Mid: 0.5
-    High: 0.45
+    Low: 0.026
+    Mid: 0.665
+    High: 0.309
   highestIncome: 0
   medianIncome: 0
   lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
-  secsPerUnit: 0.25
+  secsPerUnit: 0.1
   displayText: {fileID: 112779449}
   nextStep:
     m_PersistentCalls:
@@ -641,11 +641,14 @@ MonoBehaviour:
   controlAttractiveness: 1
   lotAttractiveness:
     means:
-    - 0
+    - -8
+    - 8
     stdDevs:
-    - 3
+    - 2
+    - 2
     prob:
-    - 1
+    - 0.5
+    - 0.5
     gentrification: 0.25
     decay: 0.1
   playerSettings:
@@ -653,6 +656,10 @@ MonoBehaviour:
     interestDeterioration: 0.3
     initQualityGoalDrop: 0.01
     qualityGoalDeterioration: 0.3
+  dynamicPricingPercents:
+    times: 00000000
+    percents:
+    - 1
   dynamicPricingPercent: 0
   dynanmicMaxDiscount: 0.5
 --- !u!114 &1351003866
@@ -674,6 +681,7 @@ MonoBehaviour:
   averageHousePrice: 0
   averageOwnedHousePrice: 0
   N_0: 0
+  N_homeless: 0
   takeOut0s: 0
   toConsider: 1
 --- !u!114 &1351003867
@@ -689,8 +697,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   saveData: 1
-  scenario: static
-  numTimeUnits: 100
+  scenario: usa-dynamic-only
+  numTimeUnits: 120
 --- !u!1 &1464171917
 GameObject:
   m_ObjectHideFlags: 0
