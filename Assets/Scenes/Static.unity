@@ -633,7 +633,7 @@ MonoBehaviour:
   lowestIncome: 0
   incomeDistribution: []
   timeUnit: 0
-  secsPerUnit: 0.1
+  secsPerUnit: 1
   displayText: {fileID: 112779449}
   nextStep:
     m_PersistentCalls:
@@ -641,14 +641,11 @@ MonoBehaviour:
   controlAttractiveness: 1
   lotAttractiveness:
     means:
-    - -8
-    - 8
+    - 0
     stdDevs:
-    - 2
-    - 2
+    - 3
     prob:
-    - 0.5
-    - 0.5
+    - 1
     gentrification: 0.25
     decay: 0.1
   playerSettings:
@@ -659,7 +656,7 @@ MonoBehaviour:
   dynamicPricingPercents:
     times: 00000000
     percents:
-    - 1
+    - 0
   dynamicPricingPercent: 0
   dynanmicMaxDiscount: 0.5
 --- !u!114 &1351003866
@@ -696,7 +693,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 817cbb1ee5970b947923b60c460557d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveData: 1
+  saveData: 0
   scenario: usa-dynamic-only
   numTimeUnits: 120
 --- !u!1 &1464171917
